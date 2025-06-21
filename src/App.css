@@ -17,7 +17,7 @@ body.login-background {
 .card {
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 0.75rem; 
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: #021228;  
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px); /* For Safari */
 }
@@ -47,7 +47,7 @@ body.login-background {
 
 /* --- CUSTOM NAVBAR STYLE --- */
 .navbar-custom-gradient {
-  background: linear-gradient(90deg, #0d6efd, #3c82f8); /* Blue gradient */
+  background: #021228; /* Blue gradient */
 }
 
 .admin-layout {
@@ -68,12 +68,15 @@ body.login-background {
   width: 260px;
   height: calc(100vh - 56px); 
   position: fixed;
-  top: 56px;
+  top: 0;
   left: 0;
-  background-color: #ffffff; 
+  height: 100vh;
+  background-color: #fcf7f7; 
   color: #343a40; 
   border-right: 1px solid #dee2e6; 
   display: flex;
+  z-index: 1051;
+  overflow-y: auto;
   flex-direction: column;
 }
 
