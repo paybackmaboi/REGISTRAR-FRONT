@@ -26,41 +26,43 @@ function Login({ onLoginSuccess }) {
   };
 
   return (
-    <div className="container mt-5">
+    <div className="container mt-5 w-75">
       <div className="row justify-content-center">
         <div className="col-md-6">
-          <div className="card shadow-lg p-4 position-relative"> 
-            <h2 className="text-center mb-4">Login to Registrar Portal</h2>
+          <div className="card shadow-lg p-4">
+            <h2 className="text-center mb-4 text-white">Registrar Portal</h2>
             <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label htmlFor="idNumber">ID Number</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    id="idNumber" 
-                    value={idNumber} 
-                    onChange={(e) => setIdNumber(e.target.value)} 
-                    required 
-                  />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="password">Password</label>
-                  <input 
-                    type="password" 
-                    className="form-control" 
-                    id="password" 
-                    value={password} 
-                    onChange={(e) => setPassword(e.target.value)} 
-                    required 
-                  />
-                </div>
-                {error && <div className="alert alert-danger">{error}</div>}
-                <div className="d-grid">
-                  <button type="submit" className="btn btn-primary btn-lg">Login</button>
-                </div>
-                <p className="text-center mt-3 text-muted">
-                  <small>Dummy Accounts: Student (S001/password) | Admin (A001/adminpass)</small>
-                </p>
+              <div className="mb-3 d-flex flex-column align-items-center">
+                <label htmlFor="idNumber" class="text-white m-2">ID Number</label>
+                <input
+                  type="text"
+                  className="form-control bg-transparent border-2 border-info rounded-pill w-75"
+                  placeholder='Enter ID'
+                  id="idNumber"
+                  value={idNumber}
+                  onChange={(e) => setIdNumber(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="mb-3 d-flex flex-column align-items-center">
+                <label htmlFor="password" class="text-white m-2">Password</label>
+                <input
+                  type="password"
+                  className="form-control bg-transparent border-2 border-info  rounded-pill w-75"
+                  placeholder='Enter password'
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              {error && <div className="alert alert-danger">{error}</div>}
+              <div class="text-center">
+                <button type="submit" className="btn btn-outline-primary btn-md rounded-pill w-50">Login</button>
+              </div>
+              <p class="text-center mt-3 text-white">
+                <small>Dummy Accounts: Student (S001/password) | Admin (A001/adminpass)</small>
+              </p>
             </form>
           </div>
         </div>
