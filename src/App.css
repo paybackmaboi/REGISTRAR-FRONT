@@ -12,12 +12,53 @@ body.login-background {
   background-attachment: fixed;
 }
 
+/* For the login */
+.account-selection {
+      max-width: 400px;
+      margin: 100px auto;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .account-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+    }
+
+    .account-label {
+      font-size: 1.2rem;
+      color: #000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-button {
+      background: none;
+      border: none;
+      color: #000000;
+      font-size: 1.3rem;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .icon-button:hover {
+      color: #0a58ca;
+    }
+
+    hr {
+      margin: 0.5rem 0;
+    }
 
 /* Default card style with a frosted glass effect for pages with the background image */
 .card {
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 0.75rem; 
-  background-color: #021228;  
+  background-color: #d8d8d8;  
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px); /* For Safari */
 }

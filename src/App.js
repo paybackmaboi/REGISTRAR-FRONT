@@ -3,6 +3,7 @@ import { Routes, Route, Outlet, Navigate, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css'; 
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 // Import components
 import Login from './components/auth/Login';
@@ -19,7 +20,7 @@ import AllStudentsView from './components/admin/AllStudentsView';
 
 // Import data and utils
 import { createDummyRegistrations } from './data/dummyData';
-import { getUserRole } from './utils/api'; // Removed unused getToken import
+import { getUserRole } from './utils/api';
 
 // Admin Layout Component
 const AdminLayout = ({ onProfileClick, setStudentToEnroll }) => (
@@ -46,21 +47,21 @@ function App() {
     if (role) {
       setUserRole(role);
     } else {
-       document.body.classList.add('login-background');
+      document.body.classList.add('login-background');
     }
     return () => {
-        document.body.classList.remove('login-background');
+      document.body.classList.remove('login-background');
     };
   }, [userRole]);
 
   useEffect(() => {
     if (modalImage || documentModalData) {
-        document.body.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
     } else {
-        document.body.style.overflow = 'auto';
+      document.body.style.overflow = 'auto';
     }
     return () => {
-        document.body.style.overflow = 'auto';
+      document.body.style.overflow = 'auto';
     };
   }, [modalImage, documentModalData]);
 
@@ -72,25 +73,25 @@ function App() {
       navigate('/student/dashboard');
     }
   };
-  
-  const handleLogout = () => { 
-      localStorage.removeItem('token');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('idNumber');
-      setUserRole(null); 
-      navigate('/login');
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('idNumber');
+    setUserRole(null);
+    navigate('/login');
   };
 
   const handleCompleteEnrollment = (enrolledStudent) => {
     const newStudent = {
       ...enrolledStudent,
-      id: enrolledStudents.length + 1, 
+      id: enrolledStudents.length + 1,
       idNo: `2024-${1000 + enrolledStudents.length + 1}`,
       createdAt: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
     };
     setEnrolledStudents(prev => [...prev, newStudent]);
 
-    setRegistrations(prev => prev.map(reg => 
+    setRegistrations(prev => prev.map(reg =>
       reg.id === enrolledStudent.id ? { ...reg, status: 'enrolled' } : reg
     ));
 
@@ -98,7 +99,7 @@ function App() {
     navigate('/admin/all-students');
     alert('Enrollment Complete! Student has been added to the master list.');
   };
-  
+
   const closeDocumentModal = () => {
     setDocumentModalData(null);
   };
@@ -118,7 +119,9 @@ function App() {
           <div className="d-flex ms-auto">
             {userRole && (
               <>
-                <span className="navbar-text me-3">Logged in as: <strong>{localStorage.getItem('idNumber')}</strong> ({userRole})</span>
+                <span className="navbar-text me-3">
+                  Logged in as: <strong>{localStorage.getItem('idNumber')}</strong> ({userRole})
+                </span>
                 <button className="btn btn-outline-light" onClick={handleLogout}>Logout</button>
               </>
             )}
@@ -133,8 +136,8 @@ function App() {
           <Route path="/student/dashboard" element={<ProtectedRoute><StudentRequestForm /></ProtectedRoute>} />
 
           {/* Admin Routes */}
-          <Route 
-            path="/admin" 
+          <Route
+            path="/admin"
             element={
               <ProtectedRoute>
                 <AdminLayout onProfileClick={setModalImage} setStudentToEnroll={setStudentToEnroll} />
@@ -144,19 +147,22 @@ function App() {
             <Route path="dashboard" element={<PlaceholderView title="Dashboard" />} />
             <Route path="all-students" element={<AllStudentsView enrolledStudents={enrolledStudents} />} />
             <Route path="all-registrations" element={<AllRegistrationsView registrations={registrations} setRegistrations={setRegistrations} />} />
-            {/* --- FIX IS HERE --- */}
-            <Route 
-              path="enrollment/unenrolled" 
-              element={<UnenrolledRegistrationsView registrations={registrations} onEnrollStudent={setStudentToEnroll} />} 
-            />
-            {/* --- END OF FIX --- */}
+            <Route path="enrollment/unenrolled" element={<UnenrolledRegistrationsView registrations={registrations} onEnrollStudent={setStudentToEnroll} />} />
             <Route path="enrollment/new" element={<NewEnrollmentView student={studentToEnroll} onCompleteEnrollment={handleCompleteEnrollment} registrations={registrations} setStudentToEnroll={setStudentToEnroll} />} />
             <Route path="assessment" element={<PlaceholderView title="Assessment" />} />
             <Route path="requests" element={<RequestManagementView setDocumentModalData={setDocumentModalData} />} />
           </Route>
 
-          {/* Redirect root path to login or dashboard */}
-          <Route path="*" element={<Navigate to={userRole ? (userRole === 'admin' ? '/admin/dashboard' : '/student/dashboard') : '/login'} replace />} />
+          {/* Redirect any unknown route */}
+          <Route
+            path="*"
+            element={
+              <Navigate
+                to={userRole ? (userRole === 'admin' ? '/admin/dashboard' : '/student/dashboard') : '/login'}
+                replace
+              />
+            }
+          />
         </Routes>
       </div>
       {modalImage && <ImageViewModal imageUrl={modalImage} onClose={() => setModalImage(null)} />}
