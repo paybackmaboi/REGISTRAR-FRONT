@@ -1,8 +1,18 @@
 import React from 'react';
+import { Link } from 'react-router-dom'; // <<<--- ADD THIS IMPORT
 
 function AllStudentsView({ enrolledStudents }) {
     const userRole = localStorage.getItem('userRole');
     const isAdmin = userRole === 'admin';
+
+    const handleViewClick = (e) => {
+        if (!isAdmin) {
+            e.preventDefault();
+            // Optionally, you can show a message, but for now, it just blocks the click.
+            // alert('You do not have permission to view student details.');
+        }
+    };
+
     return (
         <div className="container-fluid">
             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -44,10 +54,12 @@ function AllStudentsView({ enrolledStudents }) {
                                         <td><span className="badge bg-success">Regular</span></td>
                                         <td>{student.createdAt}</td>
                                         <td>
-                                            <button className="btn btn-sm btn-info me-1" title="View">
+                                            {/* START: Updated Button */}
+                                            <Link to={`/admin/students/${student.idNo}`} className="btn btn-sm btn-info me-1 " title="View" onClick={handleViewClick}>
                                                 <i className="fas fa-eye"></i>
-                                            </button>
-                                            <button className="btn btn-sm btn-primary" title="Edit">
+                                            </Link>
+                                            {/* END: Updated Button */}
+                                            <button className="btn btn-sm btn-primary" title="Edit" onClick={handleViewClick}>
                                                 <i className="fas fa-pencil-alt"></i>
                                             </button>
                                         </td>
