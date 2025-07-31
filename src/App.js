@@ -25,6 +25,7 @@ import EncodeEnrollmentView from './components/admin/EncodeEnrollmentView';
 import UnassessedStudentView from './components/admin/UnassessedStudentView';
 import ViewAssessmentView from './components/admin/ViewAssessmentView'
 import SubjectScheduleDetailView  from './components/admin/SubjectScheduleDetailView';
+import Settings from './components/settings/AccountSettings';
 
 // Import data and utils
 import { createDummyRegistrations } from './data/dummyData';
@@ -49,6 +50,11 @@ function App() {
   const [assessment, setAssessment] = useState([])
 
   const navigate = useNavigate();
+
+  // Function to handle navigation to settings view
+  const handleSettingsClick = () => {
+    navigate('/settings/settings-view');
+  }
 
   useEffect(() => {
     const role = getUserRole();
@@ -137,11 +143,13 @@ function App() {
     return children;
   };
 
+  
+
   return (
     <div id="app-wrapper">
       <nav className={`navbar navbar-expand-lg navbar-dark fixed-top ${userRole ? 'navbar-custom-gradient shadow-sm' : ''}`}>
   <div className="container-fluid">
-    {userRole && <img src="/bc.png" className="imglogo" alt="bclogo" />}
+    {userRole && <img src="/benedicto2.png" className="imglogo" alt="bclogo" />}
 
     <div className="d-flex ms-auto align-items-center">
       {userRole && (
@@ -163,7 +171,7 @@ function App() {
             </button>
             <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
               <li>
-                <button className="dropdown-item" onClick={handleLogout}>
+                <button className="dropdown-item" onClick={handleSettingsClick}>
                   <i class="fa-solid fa-sliders fa-sm me-2"></i>
                   Settings
                 </button>
@@ -214,9 +222,9 @@ function App() {
             <Route path="manage/school-year-semester" element={<SchoolYearSemesterView />} />
             <Route path="manage/view-grades" element={<ViewGradesView />} />
             <Route path="manage/encode-enrollments" element={<EncodeEnrollmentView onEncodeStudent={handleEncodeStudent} />} />
-
+      
           </Route>
-
+            <Route path="/settings/settings-view" element={<Settings />} />
           <Route path="*" element={<Navigate to={userRole === 'admin' || userRole === 'accounting'? '/admin/dashboard': userRole === 'student'? '/student/dashboard': '/login'} replace />} />
         </Routes>
       </div>
