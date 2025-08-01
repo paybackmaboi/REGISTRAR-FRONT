@@ -41,10 +41,10 @@ function Login({ onLoginSuccess }) {
                     <label htmlFor="idNumber" className="mb-1 fs-5" style={{color:'#dd5618'}}>ID Number</label>
                     <input 
                       type="text" 
-                      className="form-control rounded-3 text-center" 
+                       
                       style={{maxWidth: '260px'}} 
                       id="idNumber" 
-                      value={idNumber} 
+                      value={idNumber} className={`form-control rounded-3 text-center ${error ? 'border-danger' : ''}`}
                       onChange={(e) => setIdNumber(e.target.value)} 
                       required 
                       placeholder='Enter your ID number'
@@ -54,7 +54,7 @@ function Login({ onLoginSuccess }) {
                     <label htmlFor="password" className="mb-1 fs-5" style={{color:'#dd5618'}}>Password</label>
                     <input 
                       type="password" 
-                      className="form-control rounded-3 text-center" 
+                      className={`form-control mb-0 rounded-3 text-center ${error ? 'border-danger' : ''}`} 
                       style={{maxWidth: '260px'}} 
                       id="password" 
                       value={password} 
@@ -64,12 +64,24 @@ function Login({ onLoginSuccess }) {
                     />
                   </div>
                 </div>
-                {error && <div className="alert alert-danger">{error}</div>}
-                <div className="d-grid">
-                  <button type="submit" className="btn btn-outline-orange rounded-pill mt-2">Login</button>
+                <div className="login-error-placeholder">
+                  {error && (
+                    <p className="text-danger text-center my-0" style={{ fontSize: '0.9rem' }}>
+                      {error}
+                    </p>
+                  )}
                 </div>
-                <p className="text-center mt-3 text-white fs-6">
-                  <small>Dummy Accounts: Student (S001/password) | Admin (A001/adminpass)| Accounting (AC001/accountingpass)</small>
+                <div>
+                <button
+                  type="submit"
+                  className="btn btn-outline-orange rounded-pill mt-3 mx-auto d-block"
+                  style={{ width: '320px', minWidth: '200px' }}
+                >
+                  Login
+                </button>
+              </div>
+                <p className="text-center mt-3 text-black fs-6">
+                  <small>Forgot password</small>
                 </p>
             </form>
           </div>
