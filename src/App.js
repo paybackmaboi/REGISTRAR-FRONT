@@ -8,6 +8,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import Login from './components/auth/Login';
 import StudentRequestForm from './components/student/StudentRequestForm';
 import StudentRequestTable from './components/student/StudentRequestTable';
+import StudentProfile from './components/student/StudentProfile';
 import StudentHomePage from './components/student/StudentHomePage';
 import Sidebar from './components/admin/Sidebar';
 import AllRegistrationsView from './components/admin/AllRegistrationsView';
@@ -294,13 +295,14 @@ function App() {
           </div>
         </nav>
       )}
-      <div className="content-wrapper" style={userRole === 'student' ? { marginTop: '70px' } : {}}>
+      <div className="content-wrapper" style={userRole === 'student' ? { marginTop: '0px' } : {}}>
         <Routes>
           <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
 
           <Route path="/student/home" element={<ProtectedRoute><StudentHomePage /></ProtectedRoute>} />
           <Route path="/student/request" element={<ProtectedRoute><StudentRequestForm /></ProtectedRoute>} />
           <Route path="/student/my-request" element={<ProtectedRoute><StudentRequestTable /></ProtectedRoute>} />
+          <Route path="/student/profile" element={<ProtectedRoute><StudentProfile /></ProtectedRoute>} />
 
           <Route
             path="/admin"
