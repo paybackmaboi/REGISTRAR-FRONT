@@ -1,7 +1,7 @@
 # 📁 CAPSTONE 2: Records Management System
 
 **Documentation Lead**: Raquel Pacure  
-**Last Updated**: August 4, 2025 - 9:49 P.M
+**Last Updated**: August 5, 2025 - 2:16 P.M
 
 ---
 
@@ -15,6 +15,7 @@
 
 | Section                               | Status / Notes                                                                 |
 |---------------------------------------|--------------------------------------------------------------------------------|
+| ⛔ Scope and Limitation                 | (waiting for system completion)                                           |
 | ✔︎ Project Feasibility                 | Done                                                                          |
 | ✔︎ Work Breakdown Structure            | Done (awaiting final check by team leader)                                    |
 | ✔︎ Cost and Benefits                   | Done (prices still under review/discussion)                                   |
