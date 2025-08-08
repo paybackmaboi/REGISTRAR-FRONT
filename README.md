@@ -1,7 +1,7 @@
 # 📁 CAPSTONE 2: Records Management System
 
 **Documentation Lead**: Raquel Pacure  
-**Last Updated**: August 8, 2025 - 11:13 A.M
+**Last Updated**: August 9, 2025 - 03:42 A.M
 
 ---
 
@@ -30,8 +30,8 @@
 | ⛔ Activity Diagram                    | Not started yet (waiting for system completion)                               |
 | ⛔ State Chart Diagram                 | Not started yet (waiting for system completion)                                |
 | ⚠️ Design                              | Inputted (will be updated as features are completed)                          |
-| ⏳ Entity Relationship Diagram (ERD)   | Waiting for database to be completed                                          |
+| ⏳ Entity Relationship Diagram (ERD)   | Not Started Yet (Waiting for database to be completed)                         |
 | ⛔ System Architecture                 | Not yet started                                                              |
-| ⛔ Security                            | Not yet started                                                              |
-| ✔︎ Development                         | Completed                                                                     |
-| ✔︎ Hardware Specification            | Completed                                                                       |
+| ⛔ Security                            | Done                                                              |
+| ✔︎ Development                         | Done                                                                     |
+| ✔︎ Hardware Specification            | Done                                                                       |
