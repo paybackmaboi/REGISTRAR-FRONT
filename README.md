@@ -1,14 +1,14 @@
 # 📁 CAPSTONE 2: Records Management System
 
 **Documentation Lead**: Raquel Pacure  
-**Last Updated**: August 9, 2025 – 04:11 A.M  
+**Last Updated**: August 13, 2025 – 12:23 A.M  
 
 ---
 
 ## 📄 Project Documentation
 
 🔗 **Download the main documentation file:**  
-[📎 CAPSTONE 2 (RECORDS MANAGEMENT SYSTEM).docx](https://docs.google.com/document/d/1lrCUKcMwp2XMVFyzzKsYgWKd1Y8hjqgT/edit?usp=sharing&ouid=104714777232985337086&rtpof=true&sd=true)  
+[📎 CAPSTONE 2 (RECORDS MANAGEMENT SYSTEM).docx](https://docs.google.com/document/d/1x4wvQYwamo7RR96b6to0-e-FXHF1i5Ba/edit?usp=sharing&ouid=104714777232985337086&rtpof=true&sd=true)  
 
 ---
 
@@ -22,10 +22,10 @@
 | Cost and Benefits                     | ✅ Done              | Prices still under review/discussion             |
 | MOSCOW                                | ✅ Done              |                                                  |
 | Gantt Chart                           | ✅ Done              |                                                  |
-| Critical Path                         | 🔄 In progress       |                                                  |
+| Critical Path                         | ⛔ Not started yet   | Waiting for Project Manager to send me the Critical Path|
 | Data and Process Modeling             | ✅ Done              | Awaiting final check by team leader              |
-| Existing Flowchart                    | ✅ Done              |                                                  |
-| Proposed Flowchart                    | ✅ Done              |                                                  |
+| Existing Flowchart                    | ✅ Done              | Not the Updated Version                          |
+| Proposed Flowchart                    | ✅ Done              | Not the Updated Version                          |
 | Use Case Diagram                      | ✅ Done              |                                                  |
 | Narrative                             | ✅ Done              |                                                  |
 | Activity Diagram                      | ⛔ Not started yet   | Waiting for system completion                    |
@@ -67,4 +67,5 @@ It aims to reduce manual workloads, increase data accuracy, and enhance accessib
 - **Work Breakdown Structure** is done but pending final review from the Team Leader.  
 - **Cost and Benefits** is done, but pricing is still under review/discussion.  
 - **Activity Diagram** and **State Chart Diagram** are not yet started, waiting for system completion.  
+- The **Existing Flowchart & Proposed Flowchart** in the Document are not the Updated Version or the New Existing Flowchart & Proposed Flowchart
 
