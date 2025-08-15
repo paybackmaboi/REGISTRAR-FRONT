@@ -3,19 +3,18 @@ import { Routes, Route, Outlet, Navigate, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { API_BASE_URL, getToken } from './utils/api';
 
 // Import components
 import Login from './components/auth/Login';
 import StudentRequestForm from './components/student/StudentRequestForm';
 import StudentRequestTable from './components/student/StudentRequestTable';
-import StudentProfile from './components/student/StudentProfile';
 import StudentHomePage from './components/student/StudentHomePage';
 import Sidebar from './components/admin/Sidebar';
 import AllRegistrationsView from './components/admin/AllRegistrationsView';
 import UnenrolledRegistrationsView from './components/admin/UnenrolledRegistrationsView';
 import NewEnrollmentView from './components/admin/NewEnrollmentView';
 import RequestManagementView from './components/admin/RequestManagementView';
-// import PlaceholderView from './components/admin/PlaceholderView';
 import ImageViewModal from './components/common/ImageViewModal';
 import DocumentViewModal from './components/common/DocumentViewModal';
 import AllStudentsView from './components/admin/AllStudentsView';
@@ -30,7 +29,10 @@ import UnassessedStudentView from './components/admin/UnassessedStudentView';
 import ViewAssessmentView from './components/admin/ViewAssessmentView'
 import SubjectScheduleDetailView  from './components/admin/SubjectScheduleDetailView';
 import AccountManagementView from './components/admin/AccountManagementView';
-
+import NotificationBell from './components/common/NotificationBell'; 
+import StudentProfile  from './components/student/StudentProfile';
+import StudentRegistrationForm from './components/student/StudentRegistrationForm';
+import EditStudentDetailView from './components/admin/EditStudentDetailView';
 
 // Import data and utils
 import { createDummyRegistrations } from './data/dummyData';
@@ -47,6 +49,7 @@ const AdminLayout = ({ onProfileClick, setStudentToEnroll }) => (
 
 function App() {
   const [userRole, setUserRole] = useState(getUserRole());
+  const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [modalImage, setModalImage] = useState(null);
   const [documentModalData, setDocumentModalData] = useState(null);
   const [registrations, setRegistrations] = useState(createDummyRegistrations());
@@ -56,10 +59,63 @@ function App() {
 
   const navigate = useNavigate();
 
+  // Function to fetch students from backend
+  const fetchStudents = async () => {
+    try {
+      console.log('Fetching students from backend...'); // Debug log
+      console.log('API_BASE_URL:', API_BASE_URL); // Debug log
+      console.log('Token:', getToken() ? 'Token exists' : 'No token'); // Debug log
+      
+      const response = await fetch(`${API_BASE_URL}/students`, {
+        headers: {
+          'Authorization': `Bearer ${getToken()}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('Response status:', response.status); // Debug log
+      console.log('Response ok:', response.ok); // Debug log
+
+      if (response.ok) {
+        const students = await response.json();
+        console.log('Raw students data from backend:', students); // Debug log
+        console.log('Number of students returned:', students.length); // Debug log
+        
+        // Transform the data to match the frontend format
+        const transformedStudents = students.map(student => ({
+          id: student.id,
+          idNo: student.idNumber,
+          name: student.fullName || `${student.firstName} ${student.lastName}`,
+          gender: student.gender || 'N/A',
+          course: student.course || 'Not registered',
+          status: student.isRegistered ? 'Registered' : 'Not registered',
+          createdAt: new Date(student.createdAt).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          }),
+          academicStatus: student.academicStatus || 'Not registered'
+        }));
+        console.log('Transformed students data:', transformedStudents); // Debug log
+        setEnrolledStudents(transformedStudents);
+      } else {
+        const errorText = await response.text();
+        console.error('Failed to fetch students:', response.status, response.statusText);
+        console.error('Error response:', errorText);
+      }
+    } catch (error) {
+      console.error('Error fetching students:', error);
+      console.error('Error details:', error.message);
+    }
+  };
+
   useEffect(() => {
     const role = getUserRole();
     if (role) {
       setUserRole(role);
+      if (role === 'admin' || role === 'accounting') {
+        fetchStudents(); // Fetch students only for admin/accounting
+      }
     } else {
        document.body.classList.add('login-background');
     }
@@ -81,8 +137,12 @@ function App() {
 
   const handleLoginSuccess = (role) => {
     setUserRole(role);
-    if (role === 'admin' || role === 'accounting') {
+    if (role === 'admin') {
       navigate('/admin/dashboard');
+      fetchStudents(); // Fetch students when admin logs in
+    } else if (role === 'accounting') {
+        navigate('/admin/all-registrations');
+        fetchStudents(); // Fetch students when accounting logs in
     } else if (role === 'student') {
       navigate('/student/home');
     }
@@ -112,6 +172,11 @@ function App() {
     setStudentToEnroll(null);
     navigate('/admin/all-students');
     alert('Enrollment Complete! Student has been added to the master list.');
+    
+    // Refresh the students list from backend
+    setTimeout(() => {
+      fetchStudents();
+    }, 1000);
   };
 
   const handleEncodeStudent = (encodedStudent) => {
@@ -130,6 +195,11 @@ function App() {
         alert(`Successfully encoded and added ${newStudent.name} to the All Students list.`);
         return [...prev, newStudent];
     });
+    
+    // Refresh the students list from backend
+    setTimeout(() => {
+      fetchStudents();
+    }, 1000);
   };
 
   const closeDocumentModal = () => {
@@ -142,15 +212,13 @@ function App() {
     }
     return children;
   };
-
+  
   const logoStyle = {
     width: '185px',
     height: '35px',
-    // Apply margin ONLY for admin/accounting, not for students
-    marginLeft: (userRole === 'admin' || userRole === 'accounting') ? '18%' : '0'
+    marginLeft: (userRole === 'admin' || userRole === 'accounting') ? '20%' : '0'
   };
 
-  // ...existing code...
   return (
     <div id="app-wrapper">
       {/* Student Navbar */}
@@ -158,104 +226,74 @@ function App() {
         <nav className="navbar navbar-expand-lg navbar-dark fixed-top navbar-custom-gradient shadow-sm" style={{ minHeight: '60px', zIndex: 1040 }}>
           <div className="container-fluid align-items-center">
             <img src="/benedicto2.png" style={logoStyle} alt="bclogo" />
-            <ul className="navbar-nav flex-row ms-3" style={{ gap: '0px' }}>
-              <li className="nav-item">
-                <button
-                  className={`student-navbar-btn${window.location.pathname === '/student/home' ? ' active' : ''}`}
-                  onClick={() => navigate('/student/home')}
-                >Home</button>
-              </li>
-              <li className="nav-item">
-                <button
-                  className={`student-navbar-btn${window.location.pathname === '/student/request' ? ' active' : ''}`}
-                  onClick={() => navigate('/student/request')}
-                >Request</button>
-              </li>
-              <li className="nav-item">
-                <button
-                  className={`student-navbar-btn${window.location.pathname === '/student/my-request' ? ' active' : ''}`}
-                  onClick={() => navigate('/student/my-request')}
-                >My Request</button>
-              </li>
-            </ul>
-            <div className="ms-auto d-flex align-items-center">
-              {/* Notification Bell with Dropdown */}
-              <div className="dropdown me-2">
-                <button
-                  className="btn btn-link position-relative dropdown-toggle text-white"
-                  type="button"
-                  id="notificationDropdown"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                  style={{ color: '#fff' }}
-                >
-                  <i className="fa-regular fa-bell fa-lg"></i>
-                  {/* Notification count badge */}
-                  {Array.isArray(window.studentNotifications) && window.studentNotifications.length > 0 && (
-                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.7rem' }}>
-                      {window.studentNotifications.length}
-                    </span>
-                  )}
-                </button>
-                <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown" style={{ minWidth: '300px', maxHeight: '350px', overflowY: 'auto' }}>
-                  {Array.isArray(window.studentNotifications) && window.studentNotifications.length > 0 ? (
-                    window.studentNotifications.map((notif, idx) => (
-                      <li key={idx}>
-                        <button
-                          className="dropdown-item d-flex align-items-center"
-                          style={{ whiteSpace: 'normal', fontSize: '0.95rem' }}
-                          onClick={() => {
-                            window.studentNotifications = [];
-                            window.location.pathname = '/student/my-request';
-                          }}
-                        >
-                          <i className={`fa-solid fa-circle me-2 ${notif.status === 'approved' ? 'text-success' : 'text-danger'}`}></i>
-                          <span>
-                            Your request for <b>{notif.documentType}</b> was <b>{notif.status}</b>.
-                          </span>
-                        </button>
-                      </li>
-                    ))
-                  ) : (
-                    <li><span className="dropdown-item text-muted">No new notifications</span></li>
-                  )}
-                </ul>
-              </div>
-              {/* Profile Dropdown */}
-              <div className="dropdown me-3">
-                <button
-                  className="btn btn-link dropdown-toggle p-0 border-0 bg-transparent text-white"
-                  type="button"
-                  id="profileDropdown"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                  style={{ outline: 'none', boxShadow: 'none', color: '#fff' }}
-                >
-                  <img
-                    src={localStorage.getItem('profileImage') || '/bc.png'}
-                    alt="Profile"
-                    style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #fff', background: '#eee' }}
-                  />
-                </button>
-                <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                  <li>
-                    <button className="dropdown-item" onClick={() => navigate('/student/profile')}>
-                      <i className="fa-regular fa-user me-2"></i>
-                      Profile
-                    </button>
-                  </li>
-                  <li><hr className="dropdown-divider" /></li>
-                  <li>
-                    <button className="dropdown-item" onClick={handleLogout}>
-                      <i className="fa-solid fa-arrow-right-from-bracket fa-sm me-2"></i>
-                      Logout
-                    </button>
-                  </li>
-                </ul>
-              </div>
+            {/* Hamburger for mobile */}
+            <button className="navbar-toggler ms-2" type="button" style={{ border: 'none', background: 'transparent' }} onClick={() => setIsHamburgerOpen(!isHamburgerOpen)}>
+              <span><i className="fas fa-bars fa-lg text-white"></i></span>
+            </button>
+            {/* Main menu: collapses on mobile */}
+            <div className={`collapse navbar-collapse${isHamburgerOpen ? ' show' : ''}`} id="studentNavbarMenu">
+              <ul className="navbar-nav ms-3 mb-2 mb-lg-0">
+                <li className="nav-item">
+                  <button
+                    className={`student-navbar-btn${window.location.pathname === '/student/home' ? ' active' : ''}`}
+                    onClick={() => navigate('/student/home')}
+                  >Home</button>
+                </li>
+                <li className="nav-item">
+                  <button
+                    className={`student-navbar-btn${window.location.pathname === '/student/request' ? ' active' : ''}`}
+                    onClick={() => navigate('/student/request')}
+                  >Request</button>
+                </li>
+                <li className="nav-item">
+                  <button
+                    className={`student-navbar-btn${window.location.pathname === '/student/my-request' ? ' active' : ''}`}
+                    onClick={() => navigate('/student/my-request')}
+                  >My Request</button>
+                </li>
+              </ul>
             </div>
-          </div>
-        </nav>
+            {/* Right side: bell and profile, hidden when hamburger is open */}
+            {!isHamburgerOpen && (
+              <div className="ms-auto d-flex align-items-center">
+                {/* --- Add the NotificationBell here --- */}
+                <NotificationBell />
+                {/* Profile Dropdown */}
+                <div className="dropdown me-3">
+                  <button
+                    className="btn btn-link dropdown-toggle p-0 border-0 bg-transparent text-white"
+                    type="button"
+                    id="profileDropdown"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    style={{ outline: 'none', boxShadow: 'none', color: '#fff' }}
+                  >
+                    <img
+                      src={localStorage.getItem('profileImage') || '/bc.png'}
+                      alt="Profile"
+                      style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #fff', background: '#eee' }}
+                    />
+                  </button>
+                  <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                    <li>
+                      <button className="dropdown-item" onClick={() => navigate('/student/profile')}>
+                        <i className="fa-regular fa-user me-2"></i>
+                        Profile
+                      </button>
+                    </li>
+                    <li><hr className="dropdown-divider" /></li>
+                    <li>
+                      <button className="dropdown-item" onClick={handleLogout}>
+                        <i className="fa-solid fa-arrow-right-from-bracket fa-sm me-2"></i>
+                        Logout
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            )}
+      </div>
+    </nav>
       )}
 
       {/* Admin/Accounting Navbar */}
@@ -267,7 +305,6 @@ function App() {
               <span className="navbar-text me-3">
                 Logged in as: <strong>{localStorage.getItem('idNumber')}</strong> ({userRole})
               </span>
-              {/* Dropdown for Settings */}
               <div className="dropdown">
                 <button
                   className="btn btn-link dropdown-toggle text-white"
@@ -303,7 +340,7 @@ function App() {
           <Route path="/student/request" element={<ProtectedRoute><StudentRequestForm /></ProtectedRoute>} />
           <Route path="/student/my-request" element={<ProtectedRoute><StudentRequestTable /></ProtectedRoute>} />
           <Route path="/student/profile" element={<ProtectedRoute><StudentProfile /></ProtectedRoute>} />
-
+          <Route path="/register" element={<StudentRegistrationForm />} />
           <Route
             path="/admin"
             element={
@@ -315,6 +352,7 @@ function App() {
             <Route path="dashboard" element={<DashboardView enrolledStudents={enrolledStudents} />} />
             <Route path="all-students" element={<AllStudentsView enrolledStudents={enrolledStudents} />} />
             <Route path="students/:idNo" element={<StudentDetailView enrolledStudents={enrolledStudents} />} />
+            <Route path="/admin/students/:idNo/edit" element={<EditStudentDetailView />} />
             <Route path="all-registrations" element={<AllRegistrationsView registrations={registrations} setRegistrations={setRegistrations} />} />
             <Route
               path="enrollment/unenrolled"
@@ -334,11 +372,15 @@ function App() {
             <Route path="manage/school-year-semester" element={<SchoolYearSemesterView />} />
             <Route path="manage/view-grades" element={<ViewGradesView />} />
             <Route path="manage/encode-enrollments" element={<EncodeEnrollmentView onEncodeStudent={handleEncodeStudent} />} />
-            
-
           </Route>
 
-          <Route path="*" element={<Navigate to={userRole === 'admin' || userRole === 'accounting'? '/admin/dashboard': userRole === 'student'? '/student/dashboard': '/login'} replace />} />
+          <Route path="*" element={<Navigate to={
+              userRole === 'admin' ? '/admin/dashboard' :
+              userRole === 'accounting' ? '/admin/all-registrations' :
+              userRole === 'student' ? '/student/home' :
+              '/login'
+            } replace />} 
+          />
         </Routes>
       </div>
       {modalImage && <ImageViewModal imageUrl={modalImage} onClose={() => setModalImage(null)} />}

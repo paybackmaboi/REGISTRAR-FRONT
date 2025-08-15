@@ -4,3 +4,6 @@ Request, and My Request and many more.
 
 August 2-3, 2025 (Saturday & Sunday)
 - Working on the Student's Profile UIs and features.
+
+August 15, 2025 (Friday)
+- Redesigning the Login form UI and Student's account UIs making it responsive to any kind of device screens.

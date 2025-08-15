@@ -6,7 +6,7 @@ function StudentProfile({ onProfileClick }) {
     const userRole = localStorage.getItem('userRole') || 'student';
     const storedProfilePic = localStorage.getItem(`${userRole}ProfilePic`) || null;
     const [profilePic, setProfilePic] = useState(storedProfilePic);
-    const fullName = localStorage.getItem('fullName') || 'Romy A. Formentera Jr.';
+    const fullName = localStorage.getItem('fullName');
     const email = localStorage.getItem('email') || 'formetera@email.com';
     const country = 'Philippines';
     const timezone = 'Asia/Hong_Kong';

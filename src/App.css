@@ -1,15 +1,31 @@
 /* src/App.css */
 /* Default background color for logged-in views */
 body {
-  background-color: #f0f2f5;
+  background-color: #F1EDE3;
 }
 
 /* Class to apply the background image only to the login screen */
 body.login-background {
-  background-image: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.90) 100%), url('/public/bclogin.png');
+  background-image: url('/public/bclogin.png');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
+}
+
+body.login-background::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); /* Adjust opacity here */
+  z-index: 0; /* Keep it behind your content */
+}
+
+body.login-background * {
+  position: relative;
+  z-index: 1; /* Keep form above the overlay */
 }
 
 .card {
@@ -26,25 +42,26 @@ body.login-background {
   border: none;
   border-radius: 1.25rem;
   min-height: 320px; /* Adjust as needed for your design */
-  background-color: #f0f2f5;
+  background-color: #343BCA;
   color: #fff;
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  box-shadow: 0 8px 50px 0 rgba(0, 0, 0, 0.37);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
-/* Custom outline and hover for login button (orange) */
-.btn-outline-orange {
-  color: #dd5618;
-  border: 2px solid #dd5618;
-  background: transparent;
-  transition: background 0.3s, color 0.3s;
-}
-.btn-outline-orange:hover, .btn-outline-orange:focus {
+
+/* Custom hover for login button */
+.login-btn {
   background: #dd5618;
   color: #fff;
-  border-color: #dd5618;
+  border: none;
+  box-shadow: 0 2px 8px rgba(221,86,24,0.08);
+  transition: background 0.2s, filter 0.2s;
 }
-
+.login-btn:hover, .login-btn:focus {
+  background: #ce5010;
+  filter: brightness(0.97);
+  color: #fff;
+}
 
 .btn {
   font-weight: 500;
@@ -100,7 +117,7 @@ body.login-background {
   color: #343a40;
   border-right: 1px solid #dee2e6;
   display: flex;
-  z-index: 1051;
+  z-index: 1050;
   overflow-y:auto;
   flex-direction: column;
 }
@@ -627,7 +644,7 @@ body.login-background {
 
 /* Student navbar button designs */
 .student-navbar-btn {
-  font-size: 1rem;
+          font-size: 1rem;
   color: #ffffff;
   background: none;
   border: none;
@@ -657,4 +674,15 @@ body.login-background {
 }
 .student-navbar-btn.active::after {
   background: #ffffff;
+}
+
+.bg-black-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.45);
+  z-index: 1;
+  pointer-events: none;
 }
