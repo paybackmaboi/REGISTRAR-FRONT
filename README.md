@@ -3,7 +3,9 @@
 **Documentation Lead**: Raquel Pacure  
 **Last Updated**: August 21, 2025 – 01:27 A.M
 **Last Updated**: August 21, 2025 – 03:12 A.M
-**Last Updated**: August 21, 2025 – 04:14 A.M
+**Last Updated**: August 21, 2025 – 04:14 A.
+**Last Updated**: August 21, 2025 – 05:24 A.M
+
 
 
 
@@ -12,7 +14,7 @@
 ## 📄 Project Documentation
 
 🔗 **Download the main documentation file:**  
-[📎 CAPSTONE 2 (RECORDS MANAGEMENT SYSTEM).docx](https://docs.google.com/document/d/17ZBFURFWhi7ilaLFSU6EnHXpOYuCTjin/edit?usp=sharing&ouid=104714777232985337086&rtpof=true&sd=true)  
+[📎 CAPSTONE 2 (RECORDS MANAGEMENT SYSTEM).docx](hhttps://docs.google.com/document/d/17ZBFURFWhi7ilaLFSU6EnHXpOYuCTjin/edit?usp=sharing&ouid=104714777232985337086&rtpof=true&sd=true)  
 
 ---
 
@@ -30,7 +32,7 @@
 | Data and Process Modeling             | ✅ Done              |                                                  |
 | Existing Flowchart                    | ✅ Done              |                                                  |
 | Proposed Flowchart                    | ✅ Done              | Not the Updated Version                          |
-| Use Case Diagram                      | ✅ Done              |                                                  |
+| Use Case Diagram                      | ✅ Done              | I redesigning the Use Case Diagram               |
 | Narrative                             | ✅ Done              |                                                  |
 | Activity Diagram                      | ⛔ Not started yet   | Waiting for system completion                    |
 | State Chart Diagram                   | ⛔ Not started yet   | Waiting for system completion                    |
@@ -70,3 +72,4 @@ It aims to reduce manual workloads, increase data accuracy, and enhance accessib
 - The **Existing Flowchart** is outdated and requires updating.  
 - The **Use Case Diagram** is complete but pending final review by the Team Leader.  
 - The **Critical Path** needs to be check by the Project Manager.
+- Revised **Use Case Diagram** into block-style format. Updated actor functions (Admin/Registrar, Accounting, Student) and aligned design with thesis documentation.
