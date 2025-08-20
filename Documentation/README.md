@@ -24,7 +24,7 @@
 | Gantt Chart                           | ✅ Done              |                                                  |
 | Critical Path                         | ✅ Done              |                                                  |
 | Data and Process Modeling             | ✅ Done              | Awaiting final check by team leader              |
-| Existing Flowchart                    | ✅ Done              | Not the Updated Version                          |
+| Existing Flowchart                    | ✅ Done              |                          |
 | Proposed Flowchart                    | ✅ Done              | Not the Updated Version                          |
 | Use Case Diagram                      | ✅ Done              |                                                  |
 | Narrative                             | ✅ Done              |                                                  |
