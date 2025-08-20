@@ -38,9 +38,21 @@ import EditStudentDetailView from './components/admin/EditStudentDetailView';
 import { createDummyRegistrations } from './data/dummyData';
 import { getUserRole } from './utils/api';
 
-const AdminLayout = ({ onProfileClick, setStudentToEnroll }) => (
+const AdminLayout = ({ 
+  onProfileClick, 
+  setStudentToEnroll, 
+  schoolYears, 
+  selectedSchoolYear, 
+  onSchoolYearChange 
+}) => (
   <div className="admin-layout">
-    <Sidebar onProfileClick={onProfileClick} setStudentToEnroll={setStudentToEnroll} />
+    <Sidebar 
+      onProfileClick={onProfileClick} 
+      setStudentToEnroll={setStudentToEnroll}
+      schoolYears={schoolYears}
+      selectedSchoolYear={selectedSchoolYear}
+      onSchoolYearChange={onSchoolYearChange}
+    />
     <main className="main-content">
       <Outlet />
     </main>
@@ -55,73 +67,104 @@ function App() {
   const [studentToEnroll, setStudentToEnroll] = useState(null);
   const [enrolledStudents, setEnrolledStudents] = useState([]);
   const [assessment, setAssessment] = useState([])
+  const [schoolYears, setSchoolYears] = useState([]); 
+  const [selectedSchoolYear, setSelectedSchoolYear] = useState('');
 
   const navigate = useNavigate();
 
   // Function to fetch students from backend
-  const fetchStudents = async () => {
+  const fetchStudents = async (selectedPeriodId) => {
+    if (!selectedPeriodId) {
+      setEnrolledStudents([]);
+      return;
+    }
     try {
-      console.log('Fetching students from backend...'); // Debug log
-      console.log('API_BASE_URL:', API_BASE_URL); // Debug log
-      console.log('Token:', getToken() ? 'Token exists' : 'No token'); // Debug log
+      // The ID is a string like "1-1". We parse it to get the schoolYearId.
+      const [schoolYearId, semesterId] = selectedPeriodId.split('-');
       
-      const response = await fetch(`${API_BASE_URL}/students`, {
-        headers: {
-          'Authorization': `Bearer ${getToken()}`,
-          'Content-Type': 'application/json'
-        }
+      // Now, build the URL with the correct parameter
+      const url = `${API_BASE_URL}/students?schoolYearId=${schoolYearId}&semesterId=${semesterId}`;
+      
+      const response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
       });
-
-      console.log('Response status:', response.status); // Debug log
-      console.log('Response ok:', response.ok); // Debug log
 
       if (response.ok) {
         const students = await response.json();
-        console.log('Raw students data from backend:', students); // Debug log
-        console.log('Number of students returned:', students.length); // Debug log
         
         // Transform the data to match the frontend format
         const transformedStudents = students.map(student => ({
           id: student.id,
           idNo: student.idNumber,
-          name: student.fullName || `${student.firstName} ${student.lastName}`,
-          gender: student.gender || 'N/A',
-          course: student.course || 'Not registered',
-          status: student.isRegistered ? 'Registered' : 'Not registered',
+          name: student.name,
+          gender: student.gender,
+          course: student.course,
+          status: student.status,
           createdAt: new Date(student.createdAt).toLocaleDateString('en-US', { 
             year: 'numeric', 
             month: 'long', 
             day: 'numeric' 
           }),
-          academicStatus: student.academicStatus || 'Not registered'
+          academicStatus: student.academicStatus,
+          school_year_id: student.school_year_id
         }));
-        console.log('Transformed students data:', transformedStudents); // Debug log
         setEnrolledStudents(transformedStudents);
       } else {
-        const errorText = await response.text();
-        console.error('Failed to fetch students:', response.status, response.statusText);
-        console.error('Error response:', errorText);
+        console.error('Failed to fetch students:', response.statusText);
+        setEnrolledStudents([]); // Clear data on failure
       }
     } catch (error) {
       console.error('Error fetching students:', error);
-      console.error('Error details:', error.message);
+      setEnrolledStudents([]); // Clear data on error
     }
   };
+
+  const fetchSchoolYears = async () => {
+    try {
+      // --- START: MODIFY THIS LINE ---
+      // Use the new '/combined' endpoint
+      const response = await fetch(`${API_BASE_URL}/school-years/combined`, {
+      // --- END: MODIFY THIS LINE ---
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSchoolYears(data);
+        if (data.length > 0) {
+          // The ID is now a composite key like "1-1"
+          setSelectedSchoolYear(data[0].id); 
+        }
+      } else {
+        console.error('Failed to fetch school years');
+      }
+    } catch (error) {
+      console.error('Error fetching school years:', error);
+    }
+  };
+
 
   useEffect(() => {
     const role = getUserRole();
     if (role) {
       setUserRole(role);
       if (role === 'admin' || role === 'accounting') {
-        fetchStudents(); // Fetch students only for admin/accounting
+        fetchSchoolYears();
       }
     } else {
        document.body.classList.add('login-background');
     }
     return () => {
-        document.body.classList.remove('login-background');
+      document.body.classList.remove('login-background');
     };
   }, [userRole]);
+
+  useEffect(() => {
+    const role = getUserRole();
+    if ((role === 'admin' || role === 'accounting') && selectedSchoolYear) {
+      fetchStudents(selectedSchoolYear);
+    }
+  }, [selectedSchoolYear]);
 
   useEffect(() => {
     if (modalImage || documentModalData) {
@@ -138,14 +181,16 @@ function App() {
     setUserRole(role);
     if (role === 'admin') {
       navigate('/admin/dashboard');
-      fetchStudents(); // Fetch students when admin logs in
     } else if (role === 'accounting') {
         navigate('/admin/all-registrations');
-        fetchStudents(); // Fetch students when accounting logs in
     } else if (role === 'student') {
       navigate('/student/home');
     }
   };
+
+  const handleSchoolYearChange = (e) => {
+  setSelectedSchoolYear(e.target.value);
+};
 
   const handleLogout = () => {
       localStorage.removeItem('token');
@@ -336,7 +381,13 @@ function App() {
             path="/admin"
             element={
               <ProtectedRoute>
-                <AdminLayout onProfileClick={setModalImage} setStudentToEnroll={setStudentToEnroll} />
+                <AdminLayout 
+          onProfileClick={setModalImage} 
+          setStudentToEnroll={setStudentToEnroll} 
+          schoolYears={schoolYears}
+          selectedSchoolYear={selectedSchoolYear}
+          onSchoolYearChange={handleSchoolYearChange}
+        />
               </ProtectedRoute>
             }
           >

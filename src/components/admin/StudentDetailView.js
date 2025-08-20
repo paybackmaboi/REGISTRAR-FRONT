@@ -12,6 +12,8 @@ function StudentDetailView({ enrolledStudents }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [documentRequests, setDocumentRequests] = useState([]);
+  const [isCurriculumModalOpen, setCurriculumModalOpen] = useState(false);
+  const [enrollments, setEnrollments] = useState([]);
 
   // Fetch student details from backend
   useEffect(() => {
@@ -35,7 +37,17 @@ function StudentDetailView({ enrolledStudents }) {
           const studentData = await studentResponse.json();
           setStudent(studentData);
 
-          // --- START: Fetch the document requests for this student ---
+          if (studentData.studentDetails) {
+            const enrollmentsResponse = await fetch(`${API_BASE_URL}/students/${studentData.studentDetails.id}/enrollments`, {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            if (enrollmentsResponse.ok) {
+                setEnrollments(await enrollmentsResponse.json());
+            } else {
+                console.error("Failed to fetch enrollments.");
+            }
+          }
+          // ---  Fetch the document requests for this student ---
           const requestsResponse = await fetch(`${API_BASE_URL}/requests/student/${studentData.id}`, {
               headers: { 'Authorization': `Bearer ${getToken()}` }
           });
@@ -45,7 +57,6 @@ function StudentDetailView({ enrolledStudents }) {
           } else {
               console.error("Failed to fetch student's document requests.");
           }
-          // --- END: Fetch requests ---
 
         } else {
           setError('Failed to fetch student details');
@@ -74,10 +85,28 @@ function StudentDetailView({ enrolledStudents }) {
 
   const studentDetails = useMemo(() => {
     if (!student) return null;
-    
+
+    const processedEnrollments = {};
+    enrollments.forEach(enroll => {
+        const schedule = enroll.schedule;
+        if (!schedule || !schedule.schoolYear || !schedule.semester || !schedule.subject) return;
+
+        const semesterKey = `S.Y. ${schedule.schoolYear.year} - ${schedule.semester.name}`;
+        if (!processedEnrollments[semesterKey]) {
+            processedEnrollments[semesterKey] = [];
+        }
+        processedEnrollments[semesterKey].push({
+            id: enroll.id,
+            subject: schedule.subject.description, // Use description as per your model
+            units: schedule.subject.units,
+            finalGrade: enroll.grade?.value || 'N/A',
+            status: enroll.status || 'Enrolled',
+        });
+    });
+
     return {
       documentRequests: [],
-      enrolledSubjects: {},
+      enrolledSubjects: processedEnrollments,
       allTakenSubjects: [],
       curriculum: getDummyCurriculum(student.studentDetails?.course?.name || student.course),
       academicInfo: {
@@ -87,10 +116,18 @@ function StudentDetailView({ enrolledStudents }) {
         yearOfGraduation: student.studentDetails?.estimatedYearOfGraduation || 'N/A'
       }
     };
-  }, [student]);
+  }, [student, enrollments]);
 
   const [currentSemester, setCurrentSemester] = useState('');
-  const [isCurriculumModalOpen, setCurriculumModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (studentDetails?.enrolledSubjects) {
+        const availableSemesters = Object.keys(studentDetails.enrolledSubjects);
+        if (availableSemesters.length > 0) {
+            setCurrentSemester(availableSemesters[0]); // Set to the most recent semester
+        }
+    }
+  }, [studentDetails]);
 
   // FIX: Memoize currentSubjects to satisfy the exhaustive-deps rule
   const currentSubjects = useMemo(() => studentDetails?.enrolledSubjects?.[currentSemester] || [], [studentDetails?.enrolledSubjects, currentSemester]);
@@ -300,7 +337,9 @@ function StudentDetailView({ enrolledStudents }) {
                             <option key={semester} value={semester}>{semester}</option>
                         ))}
                     </select>
-                    <button onClick={() => setCurriculumModalOpen(true)} className="btn btn-sm btn-outline-secondary">View Student Curriculum Track</button>
+                    <button onClick={() => setCurriculumModalOpen(true)} className="btn btn-sm btn-outline-secondary">
+                            View Student Curriculum Track
+                        </button>
                 </div>
             </div>
             <div className="card-body">
@@ -690,7 +729,7 @@ function StudentDetailView({ enrolledStudents }) {
       {/* Curriculum Modal */}
       {isCurriculumModalOpen && (
         <CurriculumTrackModal
-          studentName={student.name}
+          studentName={details.fullName || `${user.firstName} ${user.lastName}`}
           curriculum={studentDetails.curriculum}
           takenSubjects={studentDetails.allTakenSubjects}
           onClose={() => setCurriculumModalOpen(false)}

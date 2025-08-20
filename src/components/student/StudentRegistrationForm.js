@@ -9,6 +9,13 @@ function StudentRegistrationForm({ onComplete }) {
     const [error, setError] = useState('');
     const [courses, setCourses] = useState([]);
     
+    const [selectedYear, setSelectedYear] = useState('');
+    const [selectedSemester, setSelectedSemester] = useState('');
+    const [subjects, setSubjects] = useState([]);
+    const [subjectsLoading, setSubjectsLoading] = useState(false);
+    const [schoolYears, setSchoolYears] = useState([]);
+    const [semesters, setSemesters] = useState([]);
+    
     const [formData, setFormData] = useState({
         // I. PERSONAL DATA
         firstName: '',
@@ -57,9 +64,10 @@ function StudentRegistrationForm({ onComplete }) {
         
         // III. CURRENT ACADEMIC BACKGROUND
         courseId: '',
+        registrationSchoolYearId: '',
+        registrationSemesterId: '', 
         major: '',
-        studentType: 'First',
-        semesterEntry: 'First',
+        studentType: 'New',
         yearOfEntry: new Date().getFullYear(),
         estimatedYearOfGraduation: '',
         applicationType: 'Freshmen',
@@ -97,25 +105,68 @@ function StudentRegistrationForm({ onComplete }) {
     
 
     useEffect(() => {
-        fetchCourses();
-    }, []);
-
-    const fetchCourses = async () => {
+    // This function will fetch all the data needed when the form first loads.
+    const fetchInitialData = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/courses`);
-
-            if (response.ok) {
-                const data = await response.json();
-                setCourses(data);
+            // Fetch Courses
+            const coursesResponse = await fetch(`${API_BASE_URL}/courses`);
+            if (coursesResponse.ok) {
+                setCourses(await coursesResponse.json());
             } else {
-                console.error('Failed to fetch courses:', response.statusText);
-                setError('Failed to load courses. Please try again.');
+                console.error('Failed to fetch courses:', coursesResponse.statusText);
+                setError('Failed to load initial form data. Please try again.');
             }
-        } catch (error) {
-            console.error('Error fetching courses:', error);
-            setError('Failed to load courses. Please try again.');
+
+            // Fetch School Years
+            const schoolYearsResponse = await fetch(`${API_BASE_URL}/school-years`);
+            if (schoolYearsResponse.ok) {
+                setSchoolYears(await schoolYearsResponse.json());
+            } else {
+                console.error('Failed to fetch school years');
+                // Don't set a general error, as courses might have loaded successfully
+            }
+
+            const semestersResponse = await fetch(`${API_BASE_URL}/semesters`);
+                if (semestersResponse.ok) {
+                    setSemesters(await semestersResponse.json());
+                } else {
+                    console.error('Failed to fetch semesters');
+                }
+        } catch (err) {
+            console.error('Error fetching initial data:', err);
+            setError('A network error occurred while loading form data. Please try again.');
         }
     };
+
+    fetchInitialData();
+}, []);
+    useEffect(() => {
+        const fetchSubjects = async () => {
+            // It now uses formData.registrationSemesterId for the semester value.
+            if (formData.courseId && selectedYear && formData.registrationSemesterId) {
+                setSubjectsLoading(true);
+                try {
+                    const response = await fetch(`${API_BASE_URL}/subjects/filter?courseId=${formData.courseId}&yearLevel=${selectedYear}&semester=${formData.registrationSemesterId}`);
+                    if (response.ok) {
+                        setSubjects(await response.json());
+                    } else {
+                        console.error('Failed to fetch subjects');
+                        setSubjects([]);
+                    }
+                } catch (error) {
+                    console.error('Error fetching subjects:', error);
+                    setSubjects([]);
+                } finally {
+                    setSubjectsLoading(false);
+                }
+            } else {
+                setSubjects([]);
+            }
+        };
+
+        fetchSubjects();
+    // The dependency array is updated to watch the correct state.
+    }, [formData.courseId, selectedYear, formData.registrationSemesterId]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -148,7 +199,7 @@ function StudentRegistrationForm({ onComplete }) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({ ...formData, yearLevel: selectedYear })
             });
 
             if (response.ok) {
@@ -559,7 +610,24 @@ function StudentRegistrationForm({ onComplete }) {
     const renderStep3 = () => (
         <div className="registration-step">
             <h3>III. CURRENT ACADEMIC BACKGROUND</h3>
-            
+            <div className="form-row">
+                <div className="form-group">
+                    <label>School Year</label>
+                    <select 
+                        name="registrationSchoolYearId" 
+                        value={formData.registrationSchoolYearId} 
+                        onChange={handleInputChange} 
+                        required
+                    >
+                        <option value="">Select School Year</option>
+                        {schoolYears.map(sy => (
+                            <option key={sy.id} value={sy.id}>
+                                S.Y. {sy.year}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
             <div className="form-row">
                 <div className="form-group">
                     <label>Course (Optional)</label>
@@ -585,72 +653,100 @@ function StudentRegistrationForm({ onComplete }) {
 
             <div className="form-row">
                 <div className="form-group">
+                    <label>Year Level *</label>
+                    <select name="yearLevel" value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} required>
+                        <option value="">Select Year</option>
+                        <option value="1">1st Year</option>
+                        <option value="2">2nd Year</option>
+                        <option value="3">3rd Year</option>
+                        <option value="4">4th Year</option>
+                    </select>
+                </div>
+                 <div className="form-group">
+            <label>Semester/Entry *</label>
+            <select
+                name="registrationSemesterId"
+                value={formData.registrationSemesterId}
+                onChange={handleInputChange}
+                required
+            >
+                <option value="">Select Semester</option>
+                {semesters.map(sem => (
+                    <option key={sem.id} value={sem.id}>{sem.name}</option>
+                ))}
+            </select>
+        </div> 
+            </div>
+
+            {/* --- NEW SUBJECTS DISPLAY --- */}
+            {subjectsLoading && <p>Loading subjects...</p>}
+            {subjects.length > 0 && (
+                <div className="subjects-display">
+                    <h4>Subjects for Selected Semester</h4>
+                    <table className="subjects-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Description</th>
+                                <th>Units</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {subjects.map(subject => (
+                                <tr key={subject.id}>
+                                    <td>{subject.code}</td>
+                                    <td>{subject.name}</td>
+                                    <td>{subject.units}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
+            <div className="form-row">
+                <div className="form-group">
                     <label>Student Type *</label>
                     <div className="radio-group">
                         <label>
                             <input
                                 type="radio"
                                 name="studentType"
-                                value="First"
-                                checked={formData.studentType === 'First'}
+                                value="New"
+                                checked={formData.studentType === 'New'}
                                 onChange={handleInputChange}
                             />
-                            First
+                            New
                         </label>
                         <label>
                             <input
                                 type="radio"
                                 name="studentType"
-                                value="Second"
-                                checked={formData.studentType === 'Second'}
+                                value="Transferee"
+                                checked={formData.studentType === 'Transferee'}
                                 onChange={handleInputChange}
                             />
-                            Second
+                            Transferee
                         </label>
                         <label>
                             <input
                                 type="radio"
                                 name="studentType"
-                                value="Summer"
-                                checked={formData.studentType === 'Summer'}
+                                value="Returnee"
+                                checked={formData.studentType === 'Returnee'}
                                 onChange={handleInputChange}
                             />
-                            Summer
-                        </label>
-                    </div>
-                </div>
-                <div className="form-group">
-                    <label>Semester/Entry *</label>
-                    <div className="radio-group">
-                        <label>
-                            <input
-                                type="radio"
-                                name="semesterEntry"
-                                value="First"
-                                checked={formData.semesterEntry === 'First'}
-                                onChange={handleInputChange}
-                            />
-                            First
+                            Returnee
                         </label>
                         <label>
                             <input
                                 type="radio"
-                                name="semesterEntry"
-                                value="Second"
-                                checked={formData.semesterEntry === 'Second'}
+                                name="studentType"
+                                value="Old"
+                                checked={formData.studentType === 'Old'}
                                 onChange={handleInputChange}
                             />
-                            Second
-                        </label>
-                        <label>
-                            <input
-                                type="radio"
-                                name="semesterEntry"
-                                value="Summer"
-                                checked={formData.semesterEntry === 'Summer'}
-                                onChange={handleInputChange}
-                            />
-                            Summer
+                            Old
                         </label>
                     </div>
                 </div>
@@ -675,42 +771,6 @@ function StudentRegistrationForm({ onComplete }) {
                         value={formData.estimatedYearOfGraduation}
                         onChange={handleInputChange}
                     />
-                </div>
-            </div>
-
-            <div className="form-group">
-                <label>Type of Application *</label>
-                <div className="radio-group">
-                    <label>
-                        <input
-                            type="radio"
-                            name="applicationType"
-                            value="Freshmen"
-                            checked={formData.applicationType === 'Freshmen'}
-                            onChange={handleInputChange}
-                        />
-                        Freshmen
-                    </label>
-                    <label>
-                        <input
-                            type="radio"
-                            name="applicationType"
-                            value="Transferee"
-                            checked={formData.applicationType === 'Transferee'}
-                            onChange={handleInputChange}
-                        />
-                        Transferee
-                    </label>
-                    <label>
-                        <input
-                            type="radio"
-                            name="applicationType"
-                            value="Cross Enrollee"
-                            checked={formData.applicationType === 'Cross Enrollee'}
-                            onChange={handleInputChange}
-                        />
-                        Cross Enrollee
-                    </label>
                 </div>
             </div>
         </div>

@@ -19,8 +19,9 @@ function AllStudentsView({ enrolledStudents }) {
 
     const filteredStudents = enrolledStudents.filter(student => {
         const searchTermLower = searchTerm.toLowerCase();
-        const nameLower = student.name.toLowerCase();
-        const idNoLower = student.idNo.toLowerCase();
+        // Ensure student.name and student.idNo are not null or undefined
+        const nameLower = student.name ? student.name.toLowerCase() : '';
+        const idNoLower = student.idNo ? student.idNo.toLowerCase() : '';
         
         return nameLower.includes(searchTermLower) || idNoLower.includes(searchTermLower);
     });

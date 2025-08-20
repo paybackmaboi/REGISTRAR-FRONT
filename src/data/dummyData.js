@@ -172,32 +172,142 @@ export const getLegacyStudents = () => {
     ];
 };
 
-export const getDummyCurriculum = (course) => {
-    if (course === 'BSIT') {
-        return {
-            '1st Year - 1st Semester': [
-                { code: 'GE 1', description: 'Understanding the Self', units: 3, prerequisite: null },
-                { code: 'IT 111', description: 'Introduction to Computing', units: 3, prerequisite: null },
-                { code: 'IT 112', description: 'Computer Programming 1', units: 3, prerequisite: 'IT 111' },
-                { code: 'NSTP 1', description: 'National Service Training Program 1', units: 3, prerequisite: null },
+// ... (keep your other existing dummy data functions)
+
+export const getDummyCurriculum = (courseName) => {
+  if (courseName !== 'Bachelor of Science in Information Technology') {
+    return { courseName: courseName, years: [] }; // Return empty for other courses
+  }
+
+  return {
+    courseName: 'Bachelor of Science in Information Technology',
+    years: [
+      {
+        year: 'FIRST YEAR',
+        semesters: [
+          {
+            name: 'FIRST SEMESTER',
+            subjects: [
+              { code: 'IT 111', title: 'Introduction to Computing', lec: 2, lab: 1, total: 3, prereq: '' },
+              { code: 'IT 112', title: 'PC Assembly & Troubleshooting', lec: 2, lab: 1, total: 3, prereq: '' },
+              { code: 'GE 1', title: 'Understanding the Self', lec: 3, lab: 0, total: 3, prereq: '' },
+              { code: 'PATHFit 1', title: 'Movement Competency Training', lec: 2, lab: 0, total: 2, prereq: '' },
+              { code: 'NSTP 1', title: 'National Service Training Prog. 1', lec: 3, lab: 0, total: 3, prereq: '' },
+              { code: 'Math 1', title: 'Math in the Modern World', lec: 3, lab: 0, total: 3, prereq: '' },
+              { code: 'Fil 1', title: 'Wika at Filipino', lec: 3, lab: 0, total: 3, prereq: '' },
             ],
-            '1st Year - 2nd Semester': [
-                { code: 'FIL 2', description: 'Readings in Philippine History', units: 3, prerequisite: null },
-                { code: 'IT 121', description: 'Computer Programming 2', units: 3, prerequisite: 'IT 112' },
-                { code: 'IT 122', description: 'Data Structures and Algorithms', units: 3, prerequisite: 'IT 121' },
-                { code: 'NSTP 2', description: 'National Service Training Program 2', units: 3, prerequisite: 'NSTP 1' },
+            totalUnits: { lec: 20, lab: 3, total: 23 }
+          },
+          {
+            name: 'SECOND SEMESTER',
+            subjects: [
+              { code: 'IT 121', title: 'Computer Programming 1', lec: 2, lab: 1, total: 3, prereq: 'IT 111' },
+              { code: 'GE 5', title: 'Purposive Communication', lec: 3, lab: 0, total: 3, prereq: '' },
+              { code: 'Fil 2', title: 'Panitikan ng Pilipinas', lec: 3, lab: 0, total: 3, prereq: '' },
+              { code: 'PATHFit 2', title: 'Exercise-based Fitness Activities', lec: 2, lab: 0, total: 2, prereq: '' },
+              { code: 'NSTP 2', title: 'National Service Training Prog. 2', lec: 3, lab: 0, total: 3, prereq: 'NSTP 1' },
+              { code: 'STS', title: 'Science, Technology & Society', lec: 3, lab: 0, total: 3, prereq: '' },
+              { code: 'IT 122', title: 'Discrete Mathematics', lec: 3, lab: 0, total: 3, prereq: '' },
             ],
-            '2nd Year - 1st Semester': [
-                { code: 'IT 222', description: 'Database Management Systems 1', units: 3, prerequisite: 'IT 122' },
-                { code: 'IT 223', description: 'Object-Oriented Programming', units: 3, prerequisite: 'IT 121' },
-                { code: 'GE 5', description: 'Purposive Communication', units: 3, prerequisite: null },
+            totalUnits: { lec: 25, lab: 1, total: 26 }
+          },
+          {
+            name: 'SUMMER',
+            subjects: [
+                { code: 'IT 131', title: 'Information Management', lec: 2, lab: 1, total: 3, prereq: 'IT 121' },
+                { code: 'IT 132', title: 'Platform Technologies (Tangible)', lec: 2, lab: 1, total: 3, prereq: 'IT 112, IT 121' },
             ],
-            '2nd Year - 2nd Semester': [
-                { code: 'IT 231', description: 'Web Development', units: 3, prerequisite: 'IT 222' },
-                { code: 'IT 232', description: 'Networking 1', units: 3, prerequisite: 'IT 211' },
+            totalUnits: { lec: 8, lab: 1, total: 9 }
+          }
+        ]
+      },
+      {
+        year: 'SECOND YEAR',
+        semesters: [
+          {
+            name: 'FIRST SEMESTER',
+            subjects: [
+              { code: 'IT 211', title: 'Data Structures & Algorithms', lec: 2, lab: 1, total: 3, prereq: 'IT 131' },
+              { code: 'IT 212', title: 'Web Systems & Technologies 1', lec: 2, lab: 1, total: 3, prereq: 'IT 111' },
+              { code: 'IT 213', title: 'Intro. to Human Computer Interaction', lec: 2, lab: 1, total: 3, prereq: 'IT 111' },
+              { code: 'Art App', title: 'Art Appreciation', lec: 3, lab: 0, total: 3, prereq: '' },
+              { code: 'GE 3', title: 'The Contemporary World', lec: 3, lab: 0, total: 3, prereq: '' },
+              { code: 'PATHFit 3', title: 'Sports', lec: 2, lab: 0, total: 2, prereq: 'PATHFit 2' },
+              { code: 'STAT', title: 'Statistics', lec: 3, lab: 0, total: 3, prereq: '' },
             ],
-        };
-    }
-    // Return a default or empty curriculum for other courses
-    return {};
+            totalUnits: { lec: 19, lab: 4, total: 23 }
+          },
+          {
+            name: 'SECOND SEMESTER',
+            subjects: [
+              { code: 'IT 221', title: 'Object Oriented Programming', lec: 2, lab: 1, total: 3, prereq: 'IT 121' },
+              { code: 'IT 222', title: 'Networking 1', lec: 2, lab: 1, total: 3, prereq: 'IT 211' },
+              { code: 'IT 223', title: 'Systems Analysis & Design', lec: 2, lab: 1, total: 3, prereq: 'IT 121 / IT 131' },
+              { code: 'IT 224', title: 'Human Computer Interaction 2', lec: 2, lab: 1, total: 3, prereq: 'IT 213' },
+              { code: 'Data Mgt', title: 'Fundamentals of Database Systems', lec: 2, lab: 1, total: 3, prereq: 'IT 210' },
+              { code: 'PATHFit 4', title: 'Dance', lec: 2, lab: 0, total: 2, prereq: 'PATHFit 3' },
+              { code: 'Rizal', title: 'Rizal\'s Life & Works', lec: 3, lab: 0, total: 3, prereq: '' },
+            ],
+            totalUnits: { lec: 15, lab: 5, total: 20 }
+          },
+        ]
+      },
+      {
+        year: 'THIRD YEAR',
+        semesters: [
+          {
+            name: 'FIRST SEMESTER',
+            subjects: [
+              { code: 'IT 311', title: 'Applications Devt. & Emerging Technologies', lec: 2, lab: 1, total: 3, prereq: 'IT 130' },
+              { code: 'IT 312', title: 'Networking 2', lec: 2, lab: 1, total: 3, prereq: 'IT 222' },
+              { code: 'IT 313', title: 'Integrative Prog. & Tech. 1', lec: 2, lab: 1, total: 3, prereq: 'IT 211 / IT 220' },
+              { code: 'IT 314', title: 'Web Systems & Technologies 2', lec: 2, lab: 1, total: 3, prereq: 'IT 212' },
+              { code: 'IT 315', title: 'Advance Database Systems', lec: 2, lab: 1, total: 3, prereq: 'IT 224' },
+            ],
+            totalUnits: { lec: 10, lab: 5, total: 15 }
+          },
+          {
+            name: 'SECOND SEMESTER',
+            subjects: [
+              { code: 'IT 321', title: 'Information Assurance & Security 1', lec: 2, lab: 1, total: 3, prereq: 'IT 312' },
+              { code: 'IT 322', title: 'Integrative Prog. & Tech. 2', lec: 2, lab: 1, total: 3, prereq: 'IT 312 / IT 200' },
+              { code: 'IT 323', title: 'Mobile Programming', lec: 2, lab: 1, total: 3, prereq: 'IT 212' },
+              { code: 'IT 324', title: 'Event Driven Programming', lec: 2, lab: 1, total: 3, prereq: 'IT 210' },
+            ],
+            totalUnits: { lec: 10, lab: 5, total: 15 }
+          },
+           {
+            name: 'SUMMER',
+            subjects: [
+                { code: 'Capstone 1', title: 'Capstone Project 1', lec: 2, lab: 1, total: 3, prereq: 'Going 4th Year' },
+                { code: 'Info Assure 2', title: 'Information Assurance & Security 2', lec: 2, lab: 0, total: 2, prereq: 'IT 321' },
+            ],
+            totalUnits: { lec: 5, lab: 0, total: 5 }
+          }
+        ]
+      },
+      {
+        year: 'FOURTH YEAR',
+        semesters: [
+          {
+            name: 'FIRST SEMESTER',
+            subjects: [
+              { code: 'IT 411', title: 'System Administration & Maint.', lec: 2, lab: 1, total: 3, prereq: 'IT 330' },
+              { code: 'IT 412', title: 'Social Issues & Professional Practice', lec: 3, lab: 0, total: 3, prereq: '4th Year Standing' },
+              { code: 'Capstone 2', title: 'Capstone Project 2', lec: 1, lab: 2, total: 3, prereq: 'Cap 1' },
+            ],
+            totalUnits: { lec: 6, lab: 4, total: 12 }
+          },
+          {
+            name: 'SECOND SEMESTER',
+            subjects: [
+              { code: 'IT 421', title: 'Seminars & Tours', lec: 1, lab: 0, total: 1, prereq: '4th Year' },
+              { code: 'OJT', title: 'Practicum (600 Hours On-the-Job Training in related field)', lec: 0, lab: 6, total: 6, prereq: '4th Year Standing' },
+            ],
+            totalUnits: { lec: 3, lab: 6, total: 8 }
+          },
+        ]
+      }
+    ]
+  };
 };

@@ -3,7 +3,15 @@ import { Link, useLocation } from 'react-router-dom';
 import { API_BASE_URL, getToken } from '../../utils/api';
 
 
-function Sidebar({ onProfileClick, setStudentToEnroll }) {
+function Sidebar({ 
+    onProfileClick, 
+    setStudentToEnroll,
+    // --- START: MODIFIED PROPS ---
+    schoolYears,
+    selectedSchoolYear,
+    onSchoolYearChange 
+    // --- END: MODIFIED PROPS ---
+}) {
     const location = useLocation();
     const [pendingRequestCount, setPendingRequestCount] = useState(0);
     
@@ -15,27 +23,6 @@ function Sidebar({ onProfileClick, setStudentToEnroll }) {
     
     const [profilePic, setProfilePic] = useState(null);
     const userRole = localStorage.getItem('userRole');
-
-    const [schoolYears, setSchoolYears] = useState([]);
-    const [selectedSchoolYear, setSelectedSchoolYear] = useState('');
-
-    useEffect(() => {
-        // TODO: Replace this with your actual API call to fetch school years
-        const fetchSchoolYears = async () => {
-            // This is dummy data that mimics an API response.
-            const dummyData = [
-                { id: 1, start_year: 2025, end_year: 2026, semester: '1st Semester' },
-                { id: 2, start_year: 2024, end_year: 2025, semester: '2nd Semester' },
-                { id: 3, start_year: 2024, end_year: 2025, semester: '1st Semester' },
-            ];
-            setSchoolYears(dummyData);
-            // Set the default selected value to the most recent one
-            if (dummyData.length > 0) {
-                setSelectedSchoolYear(dummyData[0].id);
-            }
-        };
-        fetchSchoolYears();
-    }, []);
 
     useEffect(() => {
         const fetchPendingRequests = async () => {
@@ -159,13 +146,6 @@ function Sidebar({ onProfileClick, setStudentToEnroll }) {
         if (itemName === 'Assessment') setAssessmentOpen(!isAssessmentOpen);
         if (itemName === 'Manage') setManageOpen(!isManageOpen);
     };
-
-     const handleSchoolYearChange = (e) => {
-        setSelectedSchoolYear(e.target.value);
-        // TODO: You might want to update a global state or context here
-        // so other parts of your application know the selected SY has changed.
-        console.log("Selected School Year ID:", e.target.value);
-    };
     const visibleMenuItems = userRole === 'accounting'
         ? menuItems.filter(item => item.name === 'Registration')
         : userRole === 'admin'
@@ -187,18 +167,25 @@ function Sidebar({ onProfileClick, setStudentToEnroll }) {
             
              {/* --- START: Added School Year Selector --- */}
             <div className="sidebar-sy-selector">
-                <select 
-                    className="form-select sy-dropdown"
-                    value={selectedSchoolYear}
-                    onChange={handleSchoolYearChange}
-                >
-                    {schoolYears.map(sy => (
-                        <option key={sy.id} value={sy.id}>
-                            SY {sy.start_year} - {sy.end_year} {sy.semester}
-                        </option>
-                    ))}
-                </select>
-            </div>
+    <select 
+        className="form-select sy-dropdown"
+        value={selectedSchoolYear}
+        onChange={onSchoolYearChange}
+        disabled={!schoolYears || schoolYears.length === 0}
+    >
+        {schoolYears && schoolYears.length > 0 ? (
+            // --- START: MODIFY THIS MAPPING ---
+            schoolYears.map(item => (
+                <option key={item.id} value={item.id}>
+                    {item.displayText}
+                </option>
+            ))
+            // --- END: MODIFY THIS MAPPING ---
+        ) : (
+            <option value="">Loading...</option>
+        )}
+    </select>
+</div>
             
             <div className="sidebar-nav">
                 <ul className="nav flex-column">
