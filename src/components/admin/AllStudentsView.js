@@ -76,7 +76,10 @@ function AllStudentsView({ enrolledStudents }) {
                                                 {student.status}
                                             </span>
                                         </td>
-                                        <td>{new Date(student.createdAt).toISOString().split('T')[0]}</td>
+                                        <td>
+                                            {student.createdAt && typeof student.createdAt === 'string' 
+                                            ? student.createdAt.split('T')[0] : 'N/A'}
+                                            </td>
                                         <td>
                                             {/* START: Updated Button */}
                                             <Link to={`/admin/students/${student.idNo}`} className="btn btn-sm btn-info me-1 " title="View" onClick={handleViewClick}>

@@ -1,19 +1,29 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { createDummySubjectSchedules } from '../../data/dummyData';
+import { getFunctionalSchedules } from '../../data/dummyData';
 
 function SubjectSchedulesView() {
-    const [schedules] = useState(createDummySubjectSchedules());
+    const [schedules] = useState(getFunctionalSchedules());
     const [searchTerm, setSearchTerm] = useState('');
+    // --- START: MODIFIED CODE ---
+    // Add state to manage the selected course filter
+    const [selectedCourse, setSelectedCourse] = useState('');
+    // --- END: MODIFIED CODE ---
 
     const userRole = localStorage.getItem('userRole'); // Get current user role
     const isAccounting = userRole === 'accounting';
     const isAdmin = userRole === 'admin';
+    
+    const filteredSchedules = schedules.filter(schedule => {
+        // Match search term (subject code or description)
+        const searchMatch = schedule.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            schedule.description.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const filteredSchedules = schedules.filter(schedule =>
-        schedule.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        schedule.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+        // Match selected course (if one is selected)
+        const courseMatch = selectedCourse ? schedule.course === selectedCourse : true;
+
+        return searchMatch && courseMatch;
+    });
 
     const handleViewClick = (e) => {
         if (isAccounting) {
@@ -59,7 +69,15 @@ function SubjectSchedulesView() {
                             </div>
                         </div>
                         <div className="col-md-3">
-                            <select className="form-select" disabled={!isAdmin}>
+                            {/* --- START: MODIFIED CODE --- */}
+                            {/* Control the dropdown with state */}
+                            <select 
+                                className="form-select" 
+                                disabled={!isAdmin}
+                                value={selectedCourse}
+                                onChange={(e) => setSelectedCourse(e.target.value)}
+                            >
+                            {/* --- END: MODIFIED CODE --- */}
                                 <option value="">All Courses</option>
                                 <option>BSIT</option>
                                 <option>BSCS</option>
@@ -103,7 +121,7 @@ function SubjectSchedulesView() {
                                         <td>{schedule.days}</td>
                                         <td>{schedule.time}</td>
                                         <td>{schedule.room}</td>
-                                        <td>{schedule.enrollees}</td>
+                                        <td>{schedule.enrolledStudents.length}</td>
                                         <td>
                                             <Link
                                                 to={`/admin/manage/subject-schedules/${schedule.id}`}

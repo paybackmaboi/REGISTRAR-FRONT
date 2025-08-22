@@ -1,24 +1,33 @@
 // This file holds the dummy data generators.
 
-export const createDummyRegistrations = () => {
-    const registrations = [];
-    const firstNames = ["Juan", "Maria", "Jose", "Anna", "Luis", "Sofia", "Carlos", "Isabella", "Miguel", "Camila"];
-    const lastNames = ["Dela Cruz", "Garcia", "Reyes", "Santos", "Ramos", "Mendoza", "Gonzales", "Flores", "Villanueva", "Lim"];
-    const courses = ["BSIT", "BSCS", "BSBA-HRDM", "BSED-EN", "BS-ARCH"];
+export let registrations = [];
+const firstNames = ["Juan", "Maria", "Jose", "Anna", "Luis", "Sofia", "Carlos", "Isabella", "Miguel", "Camila"];
+const lastNames = ["Dela Cruz", "Garcia", "Reyes", "Santos", "Ramos", "Mendoza", "Gonzales", "Flores", "Villanueva", "Lim"];
+const courses = ["BSIT", "BSCS", "BSBA-HRDM", "BSED-EN", "BS-ARCH"];
 
-    for (let i = 1; i <= 10; i++) {
-        registrations.push({
-            id: i, regNo: `2024-P${1000 + i}`, name: `${lastNames[i-1]}, ${firstNames[i-1]} M.`, date: new Date(2024, 5, i).toISOString().split('T')[0], status: 'pending', course: courses[i % 5], gender: i % 2 === 0 ? 'Male' : 'Female'
-        });
-    }
-    for (let i = 1; i <= 20; i++) {
-        registrations.push({
-            id: 10 + i, regNo: `2024-A${2000 + i}`, name: `${lastNames[i % 10]}, ${firstNames[(i + 1) % 10]} S.`, date: new Date(2024, 4, i).toISOString().split('T')[0], status: 'approved', course: courses[i % 5], gender: i % 2 === 0 ? 'Male' : 'Female'
-        });
+// This function now initializes the registrations array only if it's empty.
+export const createDummyRegistrations = () => {
+    if (registrations.length === 0) {
+        for (let i = 1; i <= 10; i++) {
+            registrations.push({
+                id: i, regNo: `2024-P${1000 + i}`, name: `${lastNames[i-1]}, ${firstNames[i-1]} M.`, date: new Date(2024, 5, i).toISOString().split('T')[0], status: 'pending', course: courses[i % 5], gender: i % 2 === 0 ? 'Male' : 'Female'
+            });
+        }
+        for (let i = 1; i <= 20; i++) {
+            registrations.push({
+                id: 10 + i, regNo: `2024-A${2000 + i}`, name: `${lastNames[i % 10]}, ${firstNames[(i + 1) % 10]} S.`, date: new Date(2024, 4, i).toISOString().split('T')[0], status: 'approved', course: courses[i % 5], gender: i % 2 === 0 ? 'Male' : 'Female'
+            });
+        }
     }
     return registrations;
 };
 
+export const addStudentToDummyData = (newStudent) => {
+    // Prevent duplicates
+    if (!registrations.find(student => student.id === newStudent.id)) {
+        registrations.push(newStudent);
+    }
+};
 
 // NEW FUNCTION: Provides pre-packaged subjects for enrollment
 export const getSubjectsForEnrollment = (course, yearLevel, semester) => {
@@ -61,6 +70,8 @@ export const getSubjectsForEnrollment = (course, yearLevel, semester) => {
     return courseSubjects[course] || [];
 };
 
+
+
 export const dummySubjects = [
     { code: 'IT223', description: 'Information Management', units: 3, schedule: '08:00 AM - 10:30 AM', days: 'MTWTH', room: '314', prereq: 'IT222' },
     { code: 'FILI1', description: 'The Philippine Society in the IT Era', units: 3, schedule: '10:30 AM - 12:00 PM', days: 'TF', room: '210', prereq: null },
@@ -86,6 +97,7 @@ export const createDummySubjectSchedules = () => {
   const days = ['MTWTHF', 'TTH', 'MWF', 'T', 'F'];
   const times = ['10:00AM - 12:00PM', '01:00PM - 03:00PM', '03:00PM - 05:00PM', '09:00AM - 12:00PM', '12:30PM - 02:30PM', '11:30AM - 02:30PM'];
   const rooms = ['308', '307', '312', '309', '314', '401', '402'];
+  const teachers = ["Mr. Smith", "Ms. Jones", "Mr. Reyes", "Ms. Garcia", "Mr. Tan"];
 
   return subjects.map((subject, index) => ({
     id: index + 1,
@@ -94,9 +106,76 @@ export const createDummySubjectSchedules = () => {
     days: days[index % days.length],
     time: times[index % times.length],
     room: rooms[index % rooms.length],
-    enrollees: Math.floor(Math.random() * 50) + 1,
+    teacher: teachers[index % teachers.length],
+    // --- START: MODIFIED CODE ---
+    // Assign a course to each schedule to enable filtering
+    course: courses[index % courses.length],
+    // --- END: MODIFIED CODE ---
+    enrolledStudents: [], // This will be populated by the linking function
   }));
 };
+
+// --- START: NEW FUNCTIONAL LOGIC ---
+
+// Helper function to generate a master list of students
+const generateMasterStudentList = (count) => {
+    const students = [];
+    const firstNames = ["Juan", "Maria", "Jose", "Anna", "Luis", "Sofia", "Carlos", "Isabella", "Miguel", "Camila", "John", "Jane", "Peter", "Mary", "James", "Patricia"];
+    const lastNames = ["Dela Cruz", "Garcia", "Reyes", "Santos", "Ramos", "Mendoza", "Gonzales", "Flores", "Villanueva", "Lim", "Tan", "Lee", "Kim", "Park"];
+    const courses = ["BSIT", "BSCS", "BSBA-MKTG", "BSBA-HRDM", "BSED-EN", "BS-ARCH", "BSHM"];
+    const yearLevels = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
+
+    for (let i = 0; i < count; i++) {
+        const studentId = `2022-00${100 + i}`;
+        students.push({
+            id: studentId,
+            name: `${lastNames[i % lastNames.length]}, ${firstNames[i % firstNames.length]}`,
+            gender: i % 2 === 0 ? 'Male' : 'Female',
+            course: courses[i % courses.length],
+            year: yearLevels[i % yearLevels.length],
+            enrollmentDate: new Date(2025, 4, 27 - i).toLocaleDateString()
+        });
+    }
+    return students;
+}
+
+// Caching the generated data so it's consistent across the app
+let functionalSchedules = null;
+
+// The main function to be called from the components
+export const getFunctionalSchedules = () => {
+    // If we've already generated the data, return the cached version
+    if (functionalSchedules) {
+        return functionalSchedules;
+    }
+
+    // 1. Create the base schedules (without students)
+    const schedules = createDummySubjectSchedules();
+
+    // 2. Create a master list of all students
+    const masterStudentList = generateMasterStudentList(150);
+
+    // 3. Enroll students into schedules
+    masterStudentList.forEach(student => {
+        const subjectsToEnrollCount = Math.floor(Math.random() * 4) + 2; // Enroll each student in 2-5 subjects
+        for (let i = 0; i < subjectsToEnrollCount; i++) {
+            const scheduleIndex = Math.floor(Math.random() * schedules.length);
+            const selectedSchedule = schedules[scheduleIndex];
+
+            // Add student to the schedule if not already enrolled
+            if (!selectedSchedule.enrolledStudents.some(s => s.id === student.id)) {
+                selectedSchedule.enrolledStudents.push(student);
+            }
+        }
+    });
+
+    // 4. Cache and return the fully populated schedules
+    functionalSchedules = schedules;
+    return functionalSchedules;
+};
+
+// --- END: NEW FUNCTIONAL LOGIC ---
+
 
 // FIX: Added function to generate dummy data for school years and semesters
 export const createDummySchoolYears = () => {

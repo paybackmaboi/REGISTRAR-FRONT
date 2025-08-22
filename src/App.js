@@ -69,8 +69,17 @@ function App() {
   const [assessment, setAssessment] = useState([])
   const [schoolYears, setSchoolYears] = useState([]); 
   const [selectedSchoolYear, setSelectedSchoolYear] = useState('');
-
   const navigate = useNavigate();
+
+  const handleAssessStudent = (studentToAssess) => {
+    // This function correctly filters the assessment list,
+    // creating a new list that excludes the student that was just clicked.
+    setAssessment(prevAssessmentList => 
+      prevAssessmentList.filter(student => student.id !== studentToAssess.id)
+    );
+    
+    console.log(`Student ${studentToAssess.name} has been assessed and removed from the list.`);
+  };
 
   // Function to fetch students from backend
   const fetchStudents = async (selectedPeriodId) => {
@@ -100,11 +109,7 @@ function App() {
           gender: student.gender,
           course: student.course,
           status: student.status,
-          createdAt: new Date(student.createdAt).toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          }),
+          createdAt: student.createdAt ? new Date(student.createdAt).toISOString() : 'N/A', 
           academicStatus: student.academicStatus,
           school_year_id: student.school_year_id
         }));
@@ -200,28 +205,47 @@ function App() {
       navigate('/login');
   };
 
-  const handleCompleteEnrollment = (enrolledStudent) => {
-    const newStudent = {
+const handleCompleteEnrollment = (enrolledStudent) => {
+    // Create a new, standardized student object to ensure it has the correct properties.
+    const finalStudentObject = {
       ...enrolledStudent,
-      id: enrolledStudents.length + 1,
-      idNo: `2024-${1000 + enrolledStudents.length + 1}`,
-      createdAt: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+      // Use the 'idNo' if it exists (for new students), 
+      // otherwise, use 'regNo' (for students from the unenrolled list).
+      idNo: enrolledStudent.idNo || enrolledStudent.regNo,
+      status: 'Registered',
+      // Ensure the date is always in a consistent format.
+      createdAt: new Date().toISOString(),
     };
-    setEnrolledStudents(prev => [...prev, newStudent]);
 
+    // Add the standardized student object to the master list.
+    setEnrolledStudents(prev => {
+        const isAlreadyEnrolled = prev.some(s => s.idNo === finalStudentObject.idNo);
+        if (isAlreadyEnrolled) {
+            return prev;
+        }
+        return [...prev, finalStudentObject];
+    });
+
+    // Also add the student to the assessment list.
+    setAssessment(prev => {
+        const isAlreadyInAssessment = prev.some(s => s.idNo === finalStudentObject.idNo);
+        if (isAlreadyInAssessment) {
+            return prev;
+        }
+        return [...prev, finalStudentObject];
+    });
+
+    // Update the original registrations list to remove the student from the "Unenrolled" view.
     setRegistrations(prev => prev.map(reg =>
       reg.id === enrolledStudent.id ? { ...reg, status: 'enrolled' } : reg
     ));
 
+    // Reset and navigate.
     setStudentToEnroll(null);
     navigate('/admin/all-students');
     alert('Enrollment Complete! Student has been added to the master list.');
-    
-    // Refresh the students list from backend
-    setTimeout(() => {
-      fetchStudents();
-    }, 1000);
   };
+
 
   const handleEncodeStudent = (encodedStudent) => {
     const newStudent = {
@@ -404,7 +428,7 @@ function App() {
             
             <Route path="requests" element={<RequestManagementView setDocumentModalData={setDocumentModalData} />} />
             
-            <Route path="assessment/unassessed-student" element={<UnassessedStudentView assessment={assessment} onAssessedStudent={setAssessment}/>} />
+            <Route path="assessment/unassessed-student" element={<UnassessedStudentView assessment={assessment} onAssessedStudent={handleAssessStudent}/>} />
             <Route path="assessment/view-assessment" element={<ViewAssessmentView/>} />
 
             <Route path="manage/subject-schedules" element={<SubjectSchedulesView />} />

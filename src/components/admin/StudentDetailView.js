@@ -34,32 +34,50 @@ function StudentDetailView({ enrolledStudents }) {
         });
 
         if (studentResponse.ok) {
+          // This block runs for REAL students found in the database
           const studentData = await studentResponse.json();
           setStudent(studentData);
 
+          // Fetch related data only for real students
           if (studentData.studentDetails) {
             const enrollmentsResponse = await fetch(`${API_BASE_URL}/students/${studentData.studentDetails.id}/enrollments`, {
                 headers: { 'Authorization': `Bearer ${getToken()}` }
             });
             if (enrollmentsResponse.ok) {
                 setEnrollments(await enrollmentsResponse.json());
-            } else {
-                console.error("Failed to fetch enrollments.");
             }
           }
-          // ---  Fetch the document requests for this student ---
           const requestsResponse = await fetch(`${API_BASE_URL}/requests/student/${studentData.id}`, {
               headers: { 'Authorization': `Bearer ${getToken()}` }
           });
           if (requestsResponse.ok) {
-              const requestsData = await requestsResponse.json();
-              setDocumentRequests(requestsData);
-          } else {
-              console.error("Failed to fetch student's document requests.");
+              setDocumentRequests(await requestsResponse.json());
           }
 
         } else {
-          setError('Failed to fetch student details');
+          // This block is the FALLBACK for MOCK students from dummy data
+          console.warn(`API call failed for student ID ${enrolledStudent.id}. Displaying local data.`);
+          
+          // Construct a basic student object that mimics the API response structure
+          // This prevents the page from crashing when trying to access nested properties
+          const mockStudentData = {
+              id: enrolledStudent.id,
+              idNumber: enrolledStudent.idNo,
+              email: 'N/A',
+              phoneNumber: 'N/A',
+              firstName: enrolledStudent.name.split(',')[1]?.trim().split(' ')[0] || 'N/A',
+              lastName: enrolledStudent.name.split(',')[0] || 'N/A',
+              studentDetails: { 
+                  fullName: enrolledStudent.name,
+                  studentNumber: enrolledStudent.idNo,
+                  course: { name: enrolledStudent.course },
+                  gender: enrolledStudent.gender,
+                  academicStatus: 'Regular', // Assume regular for mock data
+              }
+          };
+          setStudent(mockStudentData);
+          setEnrollments([]); // Mock students won't have saved enrollment records
+          setDocumentRequests([]); // Mock students won't have saved requests
         }
       } catch (error) {
         console.error('Error fetching student details:', error);

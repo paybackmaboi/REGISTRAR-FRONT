@@ -147,10 +147,10 @@ function Sidebar({
         if (itemName === 'Manage') setManageOpen(!isManageOpen);
     };
     const visibleMenuItems = userRole === 'accounting'
-        ? menuItems.filter(item => item.name === 'Registration')
+        ? menuItems.filter(item => ['Registration', 'Assessment'].includes(item.name))
         : userRole === 'admin'
             ? menuItems.filter(item => item.name !== 'Registration')
-            : menuItems; // Show all for any other case (or default)
+            : menuItems;
 
     return (
         <div className="sidebar">

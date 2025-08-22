@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getSubjectsForEnrollment } from '../../data/dummyData';
+import { getSubjectsForEnrollment, addStudentToDummyData } from '../../data/dummyData';
 import { API_BASE_URL, getToken } from '../../utils/api';
 import CustomAlert from '../../CustomAlert';
 
@@ -104,14 +104,22 @@ function NewEnrollmentView({ student, onCompleteEnrollment, registrations, setSt
     const handleCloseModal = () => {
         setIsModalOpen(false);
         if (createdStudentData) {
-            onCompleteEnrollment({
+            // 1. Create a single, complete newStudent object from the available data.
+            const newStudent = {
                 id: createdStudentData.id,
                 idNo: createdStudentData.idNumber,
                 name: createdStudentData.name,
                 gender: createdStudentData.gender,
-                course: createdStudentData.course,
-                createdAt: new Date().toLocaleDateString(),
-            });
+                course: newStudentInfo.course, // Get the course from the form state
+                status: 'Registered',
+                createdAt: new Date().toISOString(), // Use a consistent date format
+            };
+
+            // 2. Use this single object for both function calls.
+            addStudentToDummyData(newStudent);
+            onCompleteEnrollment(newStudent);
+            
+            // 3. Reset the form state.
             setNewStudentInfo({ lastName: '', firstName: '', middleName: '', gender: 'Male', course: 'BSIT' });
             setCreatedStudentData(null);
         }
@@ -187,7 +195,10 @@ function NewEnrollmentView({ student, onCompleteEnrollment, registrations, setSt
                     {enlistedSubjects.map(sub => (<tr key={sub.code}><td>{sub.code}</td><td>{sub.description}</td><td>{sub.days}</td><td>{sub.schedule}</td><td>{sub.room}</td><td>{sub.units}</td></tr>))}
                     <tr><td colSpan="5" className="text-end fw-bold">Total Units</td><td className="fw-bold">{totalUnits}</td></tr>
                 </tbody></table><div className="d-flex justify-content-between mt-4"><button className="btn btn-secondary" onClick={() => setStep(2)}>Back</button>
-                <button className="btn btn-success" onClick={() => onCompleteEnrollment(student)}>Complete Enrollment</button></div></div>);
+                
+                <button className="btn btn-success" onClick={() => onCompleteEnrollment(student, enlistedSubjects)}>
+                    Complete Enrollment
+                </button></div></div>);
             default: return null;
         }
     };
