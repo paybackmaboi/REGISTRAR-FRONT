@@ -1,6 +1,7 @@
+
 .print-preview-modal {
-  max-width: 900px; /* Wider modal for document view */
-  width: 95%;
+  max-width: 1200px; /* Even wider modal for document view */
+  width: 98%;
   text-align: left;
 }
 
@@ -12,12 +13,15 @@
   border: 1px solid #dee2e6;
 }
 
+
 .editable-area {
-  padding: 20px;
+  padding: 24px;
   background-color: #ffffff;
   border: 1px dashed #ced4da;
   outline: none; /* Removes the default outline when focused */
-  min-height: 400px;
+  min-height: 600px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .editable-area:focus {

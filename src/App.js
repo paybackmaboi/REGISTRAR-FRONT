@@ -33,6 +33,7 @@ import NotificationBell from './components/common/NotificationBell';
 import StudentProfile  from './components/student/StudentProfile';
 import StudentRegistrationForm from './components/student/StudentRegistrationForm';
 import EditStudentDetailView from './components/admin/EditStudentDetailView';
+import DocumentApprovalModal from './components/admin/DocumentApprovalModal';
 
 // Import data and utils
 import { createDummyRegistrations } from './data/dummyData';
@@ -361,7 +362,7 @@ function App() {
             <Route path="enrollment/new" element={<NewEnrollmentView student={studentToEnroll} onCompleteEnrollment={handleCompleteEnrollment} registrations={registrations} setStudentToEnroll={setStudentToEnroll} />} />
             
             <Route path="requests" element={<RequestManagementView setDocumentModalData={setDocumentModalData} />} />
-            
+            <Route path="requests/approve-document/:requestId" element={<DocumentApprovalModal/>} />
             <Route path="assessment/unassessed-student" element={<UnassessedStudentView assessment={assessment} onAssessedStudent={setAssessment}/>} />
             <Route path="assessment/view-assessment" element={<ViewAssessmentView/>} />
 

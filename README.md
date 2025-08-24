@@ -7,3 +7,6 @@ August 2-3, 2025 (Saturday & Sunday)
 
 August 15, 2025 (Friday)
 - Redesigning the Login form UI and Student's account UIs making it responsive to any kind of device screens.
+
+August 23, 2025 (Saturday)
+- Major changes for the Request Management's features/functions like the Approval and Rejection process.
