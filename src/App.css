@@ -659,3 +659,8 @@ body.login-background {
 .student-navbar-btn.active::after {
   background: #ffffff;
 }
+
+
+.approval-form-page {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}

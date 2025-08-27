@@ -2,6 +2,10 @@
 August 1
 This day i add functionality for accounting and registrar.
 
+#NOTE
+git config --global user.name
+git config --global user.email
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

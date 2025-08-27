@@ -52,7 +52,7 @@ function Sidebar({
 
     const menuItems = [
         { name: 'Dashboard', path: '/admin/dashboard', icon: 'fa-tachometer-alt' },
-        { name: 'Students', icon: 'fa-users', subItems: [ { name: 'All Students', path: '/admin/all-students' }, { name: 'New Student', path: '/admin/enrollment/new' }] },
+        { name: 'Students', icon: 'fa-users', subItems: [ { name: 'All Students', path: '/admin/all-students' }, { name: 'New Student', path: '/admin/enrollment/new' },] },
         { name: 'Registration', icon: 'fa-file-alt', subItems: [ { name: 'All Registrations', path: '/admin/all-registrations' } ] },
         { name: 'Enrollment', icon: 'fa-user-check',
             subItems: [ 
@@ -72,6 +72,8 @@ function Sidebar({
           icon: 'fa-folder-open', 
           badge: pendingRequestCount 
         },
+
+        { name: 'Pending Requests', path: '/admin/pending-requests', icon: 'fa-inbox' },
         { name: 'Manage',
           icon: 'fa-cogs',
           subItems: [
@@ -146,12 +148,29 @@ function Sidebar({
         if (itemName === 'Assessment') setAssessmentOpen(!isAssessmentOpen);
         if (itemName === 'Manage') setManageOpen(!isManageOpen);
     };
-    const visibleMenuItems = userRole === 'accounting'
-        ? menuItems.filter(item => ['Registration', 'Assessment'].includes(item.name))
-        : userRole === 'admin'
-            ? menuItems.filter(item => item.name !== 'Registration')
-            : menuItems;
 
+    
+    let visibleMenuItems;
+
+    if (userRole === 'accounting') {
+      visibleMenuItems = menuItems
+        .filter(item => ['Registration', 'Assessment', 'Students', 'Pending Requests'].includes(item.name)) // 1. Select 'Registration' & 'Students' menus
+        .map(item => {
+          if (item.name === 'Students') {
+            // 2. If it's the 'Students' menu, filter its sub-items
+            return {
+              ...item,
+              subItems: item.subItems.filter(subItem => subItem.name !== 'New Student')
+            };
+          }
+          return item; // 3. Return other menus ('Registration') as is
+        });
+    } else if (userRole === 'admin') {
+      visibleMenuItems = menuItems.filter(item => item.name !== 'Registration');
+    } else {
+      visibleMenuItems = menuItems;
+    }
+    
     return (
         <div className="sidebar">
             <div className="sidebar-header text-center">

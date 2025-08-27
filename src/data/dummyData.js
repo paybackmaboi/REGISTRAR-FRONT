@@ -70,6 +70,27 @@ export const getSubjectsForEnrollment = (course, yearLevel, semester) => {
     return courseSubjects[course] || [];
 };
 
+export const getDocumentTypes = () => {
+    return [
+        { name: 'Final Grade', amount: 0.00 },
+        { name: 'Transcript of Records', amount: 0.00 },
+        { name: 'Certificate of Enrollment', amount: 0.00 },
+        { name: 'Honorable Dismissal', amount: 0.00 },
+    ];
+};
+
+// Provides a sample list of subjects with grades for the print preview
+export const getDummyGradesForSemester = () => {
+    return [
+        { code: 'IT 211', description: 'Data Structures & Algorithms', units: 3, grade: '1.75' },
+        { code: 'IT 212', description: 'Web Systems & Technologies 1', units: 3, grade: '2.00' },
+        { code: 'IT 213', description: 'Intro. to Human Computer Interaction', units: 3, grade: '1.50' },
+        { code: 'Art App', description: 'Art Appreciation', units: 3, grade: '2.25' },
+        { code: 'GE 3', description: 'The Contemporary World', units: 3, grade: '1.75' },
+        { code: 'PATHFit 3', description: 'Sports', units: 2, grade: '1.25' },
+        { code: 'STAT', description: 'Statistics', units: 3, grade: '2.50' },
+    ];
+};
 
 
 export const dummySubjects = [

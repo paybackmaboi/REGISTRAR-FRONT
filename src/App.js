@@ -33,6 +33,10 @@ import NotificationBell from './components/common/NotificationBell';
 import StudentProfile  from './components/student/StudentProfile';
 import StudentRegistrationForm from './components/student/StudentRegistrationForm';
 import EditStudentDetailView from './components/admin/EditStudentDetailView';
+import BillingView from './components/student/BillingView';
+import DocumentApprovalModal from './components/admin/DocumentApprovalModal';
+import PendingRequestsView from './components/admin/PendingRequestsView';
+import StudentRequirementsView from './components/student/StudentRequirementsView';
 
 // Import data and utils
 import { createDummyRegistrations } from './data/dummyData';
@@ -72,13 +76,14 @@ function App() {
   const navigate = useNavigate();
 
   const handleAssessStudent = (studentToAssess) => {
-    // This function correctly filters the assessment list,
-    // creating a new list that excludes the student that was just clicked.
-    setAssessment(prevAssessmentList => 
-      prevAssessmentList.filter(student => student.id !== studentToAssess.id)
+    setAssessment(prevAssessmentList =>
+      prevAssessmentList.map(student =>
+        student.id === studentToAssess.id
+          ? { ...student, status: 'assessed' } // If it's the correct student, update their status
+          : student // Otherwise, leave the student unchanged
+      )
     );
-    
-    console.log(`Student ${studentToAssess.name} has been assessed and removed from the list.`);
+    console.log(`Student ${studentToAssess.name}'s status was updated to 'assessed'.`);
   };
 
   // Function to fetch students from backend
@@ -114,6 +119,7 @@ function App() {
           school_year_id: student.school_year_id
         }));
         setEnrolledStudents(transformedStudents);
+        setAssessment(transformedStudents);
       } else {
         console.error('Failed to fetch students:', response.statusText);
         setEnrolledStudents([]); // Clear data on failure
@@ -313,6 +319,18 @@ const handleCompleteEnrollment = (enrolledStudent) => {
                   onClick={() => navigate('/student/my-request')}
                 >My Request</button>
               </li>
+              <li className="nav-item">
+                <button
+                  className={`student-navbar-btn${window.location.pathname === '/student/billing' ? ' active' : ''}`}
+                  onClick={() => navigate('/student/billing')}
+                >Billing</button>
+              </li>
+              <li className="nav-item">
+    <button
+        className={`student-navbar-btn${window.location.pathname === '/student/requirements' ? ' active' : ''}`}
+        onClick={() => navigate('/student/requirements')}
+    >Requirements</button>
+</li>
             </ul>
             <div className="ms-auto d-flex align-items-center">
               
@@ -400,6 +418,9 @@ const handleCompleteEnrollment = (enrolledStudent) => {
           <Route path="/student/request" element={<ProtectedRoute><StudentRequestForm /></ProtectedRoute>} />
           <Route path="/student/my-request" element={<ProtectedRoute><StudentRequestTable /></ProtectedRoute>} />
           <Route path="/student/profile" element={<ProtectedRoute><StudentProfile /></ProtectedRoute>} />
+          <Route path="/student/billing" element={<ProtectedRoute><BillingView /></ProtectedRoute>} />
+          <Route path="/student/requirements" element={<ProtectedRoute><StudentRequirementsView /></ProtectedRoute>} />
+
           <Route path="/register" element={<StudentRegistrationForm />} />
           <Route
             path="/admin"
@@ -425,11 +446,12 @@ const handleCompleteEnrollment = (enrolledStudent) => {
               element={<UnenrolledRegistrationsView registrations={registrations} onEnrollStudent={setStudentToEnroll} />}
             />
             <Route path="enrollment/new" element={<NewEnrollmentView student={studentToEnroll} onCompleteEnrollment={handleCompleteEnrollment} registrations={registrations} setStudentToEnroll={setStudentToEnroll} />} />
+            <Route path="pending-requests" element={<PendingRequestsView />} />
             
             <Route path="requests" element={<RequestManagementView setDocumentModalData={setDocumentModalData} />} />
-            
+            <Route path="requests/approve-document/:requestId" element={<DocumentApprovalModal/>} />
             <Route path="assessment/unassessed-student" element={<UnassessedStudentView assessment={assessment} onAssessedStudent={handleAssessStudent}/>} />
-            <Route path="assessment/view-assessment" element={<ViewAssessmentView/>} />
+            <Route path="assessment/view-assessment" element={<ViewAssessmentView assessment={assessment} />} />
 
             <Route path="manage/subject-schedules" element={<SubjectSchedulesView />} />
             <Route path="/admin/manage/subject-schedules/:id" element={<ProtectedRoute><SubjectScheduleDetailView /></ProtectedRoute>}/>

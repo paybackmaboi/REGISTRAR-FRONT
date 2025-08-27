@@ -17,17 +17,36 @@ function Login({ onLoginSuccess }) {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Login failed');
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('userRole', data.user.role);
-      localStorage.setItem('idNumber', data.user.idNumber);
+      
+      // --- START: MODIFIED CODE ---
+      const { token, user } = data;
+      localStorage.setItem('token', token);
+      localStorage.setItem('userRole', user.role);
+      localStorage.setItem('idNumber', user.idNumber);
 
-      if (data.user.role === 'student') {
-        const fullName = `${data.user.firstName} ${data.user.middleName || ''} ${data.user.lastName}`;
+      // If the logged-in user is a student, fetch and store their balance
+      if (user.role === 'student') {
+        const fullName = `${user.firstName} ${user.middleName || ''} ${user.lastName}`;
         localStorage.setItem('fullName', fullName.trim());
-        localStorage.setItem('course', data.user.course);
-      }
+        localStorage.setItem('course', user.course);
 
-      onLoginSuccess(data.user.role);
+        // Fetch and store the student's current balance
+        const balanceResponse = await fetch(`${API_BASE_URL}/accounting/my-balance`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (balanceResponse.ok) {
+            const balanceData = await balanceResponse.json();
+            // Store the balance in localStorage for other components to access
+            localStorage.setItem('studentBalance', balanceData.balance);
+        } else {
+            // If fetching balance fails, assume zero to not block them unnecessarily
+            localStorage.setItem('studentBalance', '0'); 
+        }
+      }
+      // --- END: MODIFIED CODE ---
+
+      onLoginSuccess(user.role);
     } catch (err) { 
       setError(err.message); 
     }

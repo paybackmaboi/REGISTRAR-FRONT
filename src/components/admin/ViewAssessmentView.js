@@ -1,4 +1,4 @@
-import React, { } from 'react';
+import React, { Link } from 'react';
 
 
 function ViewAssessment ({assessment}) {
@@ -48,11 +48,6 @@ function ViewAssessment ({assessment}) {
                                         <td>{reg.gender}</td>
                                         <td>{reg.course}</td>
                                         <td>{reg.enrollmentdate}</td>
-                                        <td>
-                                            <button className="btn btn-sm btn-info">
-                                                <i className="fas fa-eye"></i>
-                                            </button>
-                                        </td>
                                     </tr>
                                 )) : (
                                     <tr>

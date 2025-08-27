@@ -1,10 +1,14 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef  } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useReactToPrint } from 'react-to-print';
 import { getDummyCurriculum } from '../../data/dummyData';
 import CurriculumTrackModal from './CurriculumTrackModal';
+import GradeSlipContent from './GradeSlipContent';
 import './StudentDetailView.css';
 import './CurriculumTrackModal.css';
+import NewRequestModal from './NewRequestModal'; // Import new modal
 import { API_BASE_URL, getToken } from '../../utils/api';
+import { Modal, Button, Form } from 'react-bootstrap';
 
 function StudentDetailView({ enrolledStudents }) {
   const { idNo } = useParams();
@@ -14,6 +18,17 @@ function StudentDetailView({ enrolledStudents }) {
   const [documentRequests, setDocumentRequests] = useState([]);
   const [isCurriculumModalOpen, setCurriculumModalOpen] = useState(false);
   const [enrollments, setEnrollments] = useState([]);
+
+  const [balance, setBalance] = useState(null);
+  const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false);
+  const [newBalance, setNewBalance] = useState('');
+  const userRole = localStorage.getItem('userRole');
+
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [requestToPrint, setRequestToPrint] = useState(null);
+  const componentRef = useRef();
+  const [requirements, setRequirements] = useState([]);
+  const [viewingDocument, setViewingDocument] = useState(null);
 
   // Fetch student details from backend
   useEffect(() => {
@@ -46,12 +61,32 @@ function StudentDetailView({ enrolledStudents }) {
             if (enrollmentsResponse.ok) {
                 setEnrollments(await enrollmentsResponse.json());
             }
+            const requestsResponse = await fetch(`${API_BASE_URL}/requests/student/${studentData.studentDetails.id}`, {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            if (userRole === 'admin') {
+              const requirementsResponse = await fetch(`${API_BASE_URL}/requirements/student/${studentData.studentDetails.id}`, {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+              });
+              if (requirementsResponse.ok) {
+                setRequirements(await requirementsResponse.json());
+              }
+            }
+            if (requestsResponse.ok) {
+                setDocumentRequests(await requestsResponse.json());
+            }
           }
-          const requestsResponse = await fetch(`${API_BASE_URL}/requests/student/${studentData.id}`, {
+
+
+          if (userRole === 'accounting') {
+            const balanceResponse = await fetch(`${API_BASE_URL}/accounting/student/${studentData.id}`, {
               headers: { 'Authorization': `Bearer ${getToken()}` }
-          });
-          if (requestsResponse.ok) {
-              setDocumentRequests(await requestsResponse.json());
+            });
+            if (balanceResponse.ok) {
+              const balanceData = await balanceResponse.json();
+              setBalance(balanceData.balance);
+              setNewBalance(balanceData.balance); // Pre-fill modal input
+            }
           }
 
         } else {
@@ -88,7 +123,116 @@ function StudentDetailView({ enrolledStudents }) {
     };
 
     fetchStudentDetails();
-  }, [idNo, enrolledStudents]);
+  }, [idNo, enrolledStudents, userRole]);
+
+  const handleUpdateBalance = async () => {
+    if (!student || newBalance === '' || isNaN(parseFloat(newBalance))) {
+        alert('Please enter a valid balance.');
+        return;
+    }
+    try {
+        const response = await fetch(`${API_BASE_URL}/accounting/student/${student.id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            },
+            body: JSON.stringify({ balance: newBalance })
+        });
+        if (!response.ok) throw new Error('Failed to update balance.');
+
+        const updatedBalance = await response.json();
+        setBalance(newBalance); // Update balance in the view
+        setIsBalanceModalOpen(false); // Close modal
+        alert('Balance updated successfully!');
+    } catch (error) {
+        console.error('Error updating balance:', error);
+        alert(error.message);
+    }
+  };
+
+  const handleConfirmRequest = async (newRequestData) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/requests`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            },
+            body: JSON.stringify({
+                studentId: student.studentDetails.id,
+                ...newRequestData
+            })
+        });
+        if (!response.ok) throw new Error('Failed to create request.');
+
+        // Refresh requests list after creation
+        const requestsResponse = await fetch(`${API_BASE_URL}/requests/student/${student.studentDetails.id}`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        if (requestsResponse.ok) {
+            setDocumentRequests(await requestsResponse.json());
+        }
+
+    } catch (err) {
+        alert(err.message);
+    }
+  };
+
+  const handleRequirementStatusUpdate = async (requirementId, status) => {
+    if (!requirementId) {
+        alert("Cannot update status: submission ID is missing.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/requirements/${requirementId}/status`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            },
+            body: JSON.stringify({ status })
+        });
+        if (!response.ok) throw new Error('Failed to update status.');
+
+        // Refresh the requirements list to show the change
+        const requirementsResponse = await fetch(`${API_BASE_URL}/requirements/student/${student.studentDetails.id}`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        if (requirementsResponse.ok) {
+            setRequirements(await requirementsResponse.json());
+        }
+    } catch (err) {
+        alert(err.message);
+    }
+  };
+
+ const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+    onAfterPrint: () => setRequestToPrint(null)
+  });
+  
+   useEffect(() => {
+    if (requestToPrint && student) { // Ensure student data is loaded before printing
+      handlePrint();
+    }
+  }, [requestToPrint, student]);
+  
+  const handlePrintRequest = (request) => {
+    // FIX: Check if student data exists before attempting to print.
+    // This prevents the action from failing if the main data hasn't loaded yet.
+    if (!student) {
+      alert('Student details are still loading. Please wait a moment and try again.');
+      return;
+    }
+
+    if (request.documentType === 'Final Grade') {
+      setRequestToPrint(request);
+    } else {
+      alert(`Printing for "${request.documentType}" is not yet implemented.`);
+    }
+  };
 
   // Helper function for ordinal suffixes
   const getOrdinalSuffix = (num) => {
@@ -219,6 +363,16 @@ function StudentDetailView({ enrolledStudents }) {
     return status.toLowerCase() === 'taken' ? 'badge bg-primary' : 'badge bg-info';
   };
 
+   const getRequirementStatusBadge = (status) => {
+    const statusMap = {
+        'lacking': 'bg-secondary',
+        'submitted': 'bg-warning text-dark',
+        'approved': 'bg-success',
+        'rejected': 'bg-danger',
+    };
+    return statusMap[status] || 'bg-light';
+  };
+
   // Extract student details for easier access
   const details = student.studentDetails || {};
   const user = student;
@@ -239,13 +393,65 @@ function StudentDetailView({ enrolledStudents }) {
             <Link to="/admin/all-students" className="btn btn-outline-secondary">
               <i className="fas fa-arrow-left me-2"></i>Back to List
             </Link>
+            {(userRole === 'admin') && (
             <Link to={`/admin/students/${idNo}/edit`} className="btn btn-primary">
                 <i className="fas fa-pencil-alt me-2"></i>Edit
               </Link>
+            )}
           </div>
         </div>
       </div>
 
+      {(userRole === 'accounting') && (
+        <div className="row">
+          <div className="col-12 mb-4">
+            <div className="card shadow-sm">
+              <div className="card-header bg-success text-white">
+                <h5 className="mb-0"><i className="fas fa-cash-register me-2"></i> Accounting Details</h5>
+              </div>
+              <div className="card-body d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Current Balance:</strong>
+                  <span className={`ms-2 fs-5 fw-bold ${balance > 0 ? 'text-danger' : 'text-success'}`}>
+                    ₱ {balance !== null ? parseFloat(balance).toFixed(2) : 'Loading...'}
+                  </span>
+                </div>
+                <button className="btn btn-primary" onClick={() => setIsBalanceModalOpen(true)}>
+                  Update Balance
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Modal show={isBalanceModalOpen} onHide={() => setIsBalanceModalOpen(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Update Student Balance</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group>
+            <Form.Label>New Balance Amount</Form.Label>
+            <Form.Control
+              type="number"
+              placeholder="Enter new balance"
+              value={newBalance}
+              onChange={(e) => setNewBalance(e.target.value)}
+              step="0.01"
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setIsBalanceModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleUpdateBalance}>
+            Save Changes
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {(userRole === 'admin') && (
       <div className="row">
         {/* Student Profile Card */}
         <div className="col-lg-4 mb-4">
@@ -297,11 +503,48 @@ function StudentDetailView({ enrolledStudents }) {
         </div>
 
         <div className="col-lg-8">
+          {userRole === 'admin' && (
+                <div className="card shadow-sm mb-4">
+                    <div className="card-header bg-info text-white">
+                        <h5 className="mb-0"><i className="fas fa-folder-open me-2"></i>Student Requirements</h5>
+                    </div>
+                    <div className="card-body">
+                        {requirements.length > 0 ? (
+                            <ul className="list-group list-group-flush">
+                                {requirements.map(req => (
+                                    <li key={req.documentType} className="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span className="fw-bold">{req.documentType.replace(/_/g, ' ')}</span>
+                                            <br/>
+                                            <span className={`badge ${getRequirementStatusBadge(req.status)} text-uppercase`}>{req.status}</span>
+                                        </div>
+                                        <div className="d-flex align-items-center">
+                                            {req.filePath && (
+                                                <a href={`${API_BASE_URL}/uploads/${req.filePath}`} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-secondary me-2">View</a>
+                                            )}
+                                            {req.status === 'submitted' && (
+                                                <>
+                                                    <button className="btn btn-sm btn-success me-2" onClick={() => handleRequirementStatusUpdate(req.id, 'approved')}>Approve</button>
+                                                    <button className="btn btn-sm btn-danger" onClick={() => handleRequirementStatusUpdate(req.id, 'rejected')}>Reject</button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-muted text-center">Loading requirements status...</p>
+                        )}
+                    </div>
+                </div>
+            )}
 
           <div className="card shadow-sm mb-4">
     <div className="card-header bg-white d-flex justify-content-between align-items-center">
       <h5 className="mb-0">Document Requests</h5>
-      <button className="btn btn-sm btn-outline-primary">New Request</button>
+      <button className="btn btn-sm btn-outline-primary" onClick={() => setIsRequestModalOpen(true)}>
+                <i className="fas fa-plus me-1"></i> New Request
+              </button>
     </div>
     <div className="card-body">
       <div className="table-responsive">
@@ -316,26 +559,52 @@ function StudentDetailView({ enrolledStudents }) {
             </tr>
           </thead>
           <tbody>
-              {documentRequests.length > 0 ? (
-                documentRequests.map((req) => (
-                  <tr key={req.id}>
-                      <td>{req.documentType}</td>
-                      <td><span className={`badge ${getStatusBadge(req.status)}`}>{req.status}</span></td>
-                      <td>1</td>
-                      <td>{new Date(req.createdAt).toLocaleDateString()}</td>
-                      <td>
-                        <button className="btn btn-sm btn-info" title="View Details">
-                          <i className="fas fa-eye"></i>
-                        </button>
-                      </td>
-                  </tr>
-                ))
-                ) : (
-                <tr>
-                  <td colSpan="4" className="text-center text-muted">No document requests found for this student.</td>
-                </tr>
-                )}
-                </tbody>
+                      {documentRequests.length > 0 ? (
+                        documentRequests.map((req) => (
+                          <tr key={req.id}>
+                              <td>
+                                  <div>{req.documentType}</div>
+                                  {req.schoolYear && <small className="text-muted">{req.schoolYear} / {req.semester}</small>}
+                              </td>
+                              <td><span className={`badge ${getStatusBadge(req.status)}`}>
+                                  {req.status.replace('_', ' ')}
+                                </span>
+                              </td>
+                              <td>₱ {req.amount.toFixed(2)}</td>
+                              <td>{new Date(req.createdAt).toLocaleDateString()}</td>
+                              <td>
+                                {/* --- START: NEW ACTIONS DROPDOWN --- */}
+                                <div className="dropdown">
+                                    <button className="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i className="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <ul className="dropdown-menu">
+                                        <li>
+                                            <button className="dropdown-item" onClick={() => handlePrintRequest(req)}>
+                                                <i className="fas fa-print fa-fw me-2"></i>Print
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button className="dropdown-item" onClick={() => alert('Marking as complete!')}>
+                                                <i className="fas fa-check fa-fw me-2"></i>Mark as Complete
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button className="dropdown-item text-danger" onClick={() => alert('Cancelling request!')}>
+                                                <i className="fas fa-times fa-fw me-2"></i>Cancel Request
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                              </td>
+                          </tr>
+                        ))
+                        ) : (
+                        <tr>
+                          <td colSpan="5" className="text-center text-muted">No document requests found.</td>
+                        </tr>
+                        )}
+                  </tbody>
         </table>
       </div>
     </div>
@@ -743,6 +1012,7 @@ function StudentDetailView({ enrolledStudents }) {
           )}
         </div>
       </div>
+      )}
 
       {/* Curriculum Modal */}
       {isCurriculumModalOpen && (
@@ -753,6 +1023,16 @@ function StudentDetailView({ enrolledStudents }) {
           onClose={() => setCurriculumModalOpen(false)}
         />
       )}
+
+      <NewRequestModal 
+        isOpen={isRequestModalOpen}
+        onClose={() => setIsRequestModalOpen(false)}
+        onConfirm={handleConfirmRequest}
+      />
+
+       <div style={{ display: 'none' }}>
+        <GradeSlipContent ref={componentRef} request={requestToPrint} student={student} />
+      </div>
     </div>
   );
 }

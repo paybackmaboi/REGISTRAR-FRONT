@@ -9,13 +9,13 @@ function AllStudentsView({ enrolledStudents }) {
     console.log('AllStudentsView - enrolledStudents.length:', enrolledStudents.length); // Debug log
     const [searchTerm, setSearchTerm] = useState('');
 
-    const handleViewClick = (e) => {
-        if (!isAdmin) {
-            e.preventDefault();
-            // Optionally, you can show a message, but for now, it just blocks the click.
-            // alert('You do not have permission to view student details.');
-        }
-    };
+    // const handleViewClick = (e) => {
+    //     if (!isAdmin) {
+    //         e.preventDefault();
+    //         // Optionally, you can show a message, but for now, it just blocks the click.
+    //         // alert('You do not have permission to view student details.');
+    //     }
+    // };
 
     const filteredStudents = enrolledStudents.filter(student => {
         const searchTermLower = searchTerm.toLowerCase();
@@ -82,13 +82,13 @@ function AllStudentsView({ enrolledStudents }) {
                                             </td>
                                         <td>
                                             {/* START: Updated Button */}
-                                            <Link to={`/admin/students/${student.idNo}`} className="btn btn-sm btn-info me-1 " title="View" onClick={handleViewClick}>
+                                            <Link to={`/admin/students/${student.idNo}`} className="btn btn-sm btn-info me-1 " title="View">
                                                 <i className="fas fa-eye"></i>
                                             </Link>
                                             {/* END: Updated Button */}
-                                            <button className="btn btn-sm btn-primary" title="Edit" onClick={handleViewClick}>
+                                            {/* <button className="btn btn-sm btn-primary" title="Edit">
                                                 <i className="fas fa-pencil-alt"></i>
-                                            </button>
+                                            </button> */}
                                         </td>
                                     </tr>
                                 )) : (
